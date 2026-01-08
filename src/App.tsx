@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState } from 'react'
 import clsx from 'clsx'
 import { categories } from './assets/categories'
 // Types
@@ -197,14 +197,11 @@ function DecisionCard({ decision, categoryColor, isHighlighted }: {
 
 function CategorySection({ category, activePhase }: { category: Category; activePhase: Phase }) {
   const colors = categoryColors[category.color]
-  const filteredDecisions = useMemo(() => {
-    if (activePhase === null) return category.decisions
-    return category.decisions.filter(d => d.phase === activePhase || d.phase === null)
-  }, [category.decisions, activePhase])
+  const filteredDecisions = activePhase === null 
+    ? category.decisions 
+    : category.decisions.filter(d => d.phase === activePhase || d.phase === null)
 
-  const phaseDecisions = useMemo(() => {
-    return category.decisions.filter(d => d.phase !== null).length
-  }, [category.decisions])
+  const phaseDecisions = category.decisions.filter(d => d.phase !== null).length
 
   if (filteredDecisions.length === 0) return null
 
@@ -217,7 +214,7 @@ function CategorySection({ category, activePhase }: { category: Category; active
           {phaseDecisions} priority decision{phaseDecisions !== 1 ? 's' : ''}
         </span>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 items-start">
         {filteredDecisions.map((decision) => (
           <DecisionCard 
             key={decision.id} 
@@ -253,20 +250,18 @@ function Header() {
 }
 
 function Stats({ activePhase }: { activePhase: Phase }) {
-  const stats = useMemo(() => {
-    const allDecisions = categories.flatMap(c => c.decisions)
-    const phaseDecisions = allDecisions.filter(d => d.phase !== null)
-    const filtered = activePhase 
-      ? allDecisions.filter(d => d.phase === activePhase)
-      : allDecisions
-    
-    return {
-      totalCategories: categories.length,
-      totalDecisions: allDecisions.length,
-      phaseDecisions: phaseDecisions.length,
-      currentFiltered: filtered.length,
-    }
-  }, [activePhase])
+  const allDecisions = categories.flatMap(c => c.decisions)
+  const phaseDecisions = allDecisions.filter(d => d.phase !== null).length
+  const currentFiltered = activePhase 
+    ? allDecisions.filter(d => d.phase === activePhase).length
+    : allDecisions.length
+  
+  const stats = {
+    totalCategories: categories.length,
+    totalDecisions: allDecisions.length,
+    phaseDecisions,
+    currentFiltered,
+  }
 
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
