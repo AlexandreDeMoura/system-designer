@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import clsx from 'clsx'
 import { categories } from './assets/categories'
+import type { LucideIcon } from 'lucide-react'
+
 // Types
 type Phase = 1 | 2 | 3 | 4 | null
 
@@ -23,7 +25,7 @@ interface Decision {
 export interface Category {
   id: string
   name: string
-  icon: string
+  icon: LucideIcon
   color: string
   decisions: Decision[]
 }
@@ -205,10 +207,12 @@ function CategorySection({ category, activePhase }: { category: Category; active
 
   if (filteredDecisions.length === 0) return null
 
+  const IconComponent = category.icon
+
   return (
     <section className="category-section mb-12">
       <div className="flex items-center gap-3 mb-4">
-        <span className={clsx('text-2xl', colors.text)}>{category.icon}</span>
+        <IconComponent className={clsx('w-6 h-6', colors.text)} />
         <h2 className="text-xl font-bold text-slate-100">{category.name}</h2>
         <span className="text-xs text-slate-500 ml-auto">
           {phaseDecisions} priority decision{phaseDecisions !== 1 ? 's' : ''}

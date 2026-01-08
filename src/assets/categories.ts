@@ -1,11 +1,22 @@
 import type { Category } from "../App";
-
+import { 
+  SquareMousePointer, 
+  Network, 
+  Database, 
+  Server, 
+  LockKeyhole, 
+  Cloud, 
+  ChartBar, 
+  BugPlay, 
+  Braces, 
+  CircleEllipsis 
+} from 'lucide-react';
 
 export const categories: Category[] = [
     {
       id: 'frontend',
       name: 'Front-End',
-      icon: '◈',
+      icon: SquareMousePointer,
       color: 'blue',
       decisions: [
         {
@@ -111,7 +122,7 @@ export const categories: Category[] = [
     {
       id: 'client-server',
       name: 'Client-Server Interface',
-      icon: '⟺',
+      icon: Network,
       color: 'cyan',
       decisions: [
         {
@@ -147,7 +158,7 @@ export const categories: Category[] = [
     {
       id: 'backend',
       name: 'Back-End',
-      icon: '⬢',
+      icon: Server,
       color: 'violet',
       decisions: [
         {
@@ -200,7 +211,7 @@ export const categories: Category[] = [
     {
       id: 'data',
       name: 'Data Layer',
-      icon: '◉',
+      icon: Database,
       color: 'emerald',
       decisions: [
         {
@@ -265,7 +276,7 @@ export const categories: Category[] = [
     {
       id: 'auth',
       name: 'Auth & Security',
-      icon: '◈',
+      icon: LockKeyhole,
       color: 'rose',
       decisions: [
         {
@@ -316,7 +327,7 @@ export const categories: Category[] = [
     {
       id: 'devops',
       name: 'DevOps & Infrastructure',
-      icon: '⚙',
+      icon: Cloud,
       color: 'amber',
       decisions: [
         {
@@ -365,7 +376,7 @@ export const categories: Category[] = [
     {
       id: 'observability',
       name: 'Observability',
-      icon: '◎',
+      icon: ChartBar,
       color: 'cyan',
       decisions: [
         {
@@ -398,7 +409,7 @@ export const categories: Category[] = [
     {
       id: 'testing',
       name: 'Testing Strategy',
-      icon: '✓',
+      icon: BugPlay,
       color: 'emerald',
       decisions: [
         {
@@ -431,7 +442,7 @@ export const categories: Category[] = [
     {
       id: 'dx',
       name: 'Developer Experience',
-      icon: '⌘',
+      icon: Braces,
       color: 'violet',
       decisions: [
         {
@@ -478,7 +489,7 @@ export const categories: Category[] = [
     {
       id: 'cross-cutting',
       name: 'Cross-Cutting Concerns',
-      icon: '◇',
+      icon: CircleEllipsis,
       color: 'rose',
       decisions: [
         {
