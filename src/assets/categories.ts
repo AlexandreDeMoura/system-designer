@@ -38,7 +38,7 @@ export const categories: Category[] = [
           id: '1.2',
           title: 'Language & Type System',
           description: 'Type safety and developer productivity tradeoffs.',
-          phase: null,
+          phase: 1,
           options: [
             { name: 'TypeScript (Strict)', pros: ['Catches bugs at compile time', 'Excellent IDE support', 'Self-documenting', 'Confident refactoring'], cons: ['Build step overhead', 'Learning curve for edge cases', 'Occasional type gymnastics'], bestWhen: 'Codebases expected to scale, teams > 2, long-lived projects' },
             { name: 'TypeScript (Gradual)', pros: ['Some benefits without full investment', 'Easier migration'], cons: ['False sense of security if `any` overused', 'Inconsistent DX'], bestWhen: 'Migrating existing JS codebases, teams new to TS' },
@@ -143,7 +143,7 @@ export const categories: Category[] = [
           id: '2.3',
           title: 'Real-Time Communication',
           description: 'Enabling live, bidirectional data flow.',
-          phase: null,
+          phase: 2,
           options: [
             { name: 'WebSockets', pros: ['True bidirectional', 'Low latency'], cons: ['Connection management', 'Different infra', 'Scaling complexity'], bestWhen: 'Chat, live collaboration, gaming' },
             { name: 'Server-Sent Events (SSE)', pros: ['Simple server-to-client', 'Uses HTTP', 'Auto-reconnect'], cons: ['Unidirectional only', 'Connection limits in HTTP/1.1'], bestWhen: 'Notifications, live feeds' },
@@ -233,7 +233,7 @@ export const categories: Category[] = [
           id: '4.2',
           title: 'Specific Database Choice',
           description: 'The actual database technology to use.',
-          phase: null,
+          phase: 1,
           options: [
             { name: 'PostgreSQL', pros: ['Feature-rich (JSONB, arrays, FTS)', 'Rock-solid', 'Open-source'], cons: ['Tuning can be complex'], bestWhen: 'Default choice, power and flexibility needed' },
             { name: 'MySQL / MariaDB', pros: ['Simple', 'Fast reads', 'Widely known'], cons: ['Fewer features than Postgres'], bestWhen: 'Simpler needs, read-heavy workloads' },
@@ -248,7 +248,7 @@ export const categories: Category[] = [
           id: '4.4',
           title: 'ORM / Query Builder / Raw SQL',
           description: 'How you interact with your database in code.',
-          phase: null,
+          phase: 2,
           options: [
             { name: 'Prisma', pros: ['Great DX', 'Type generation', 'Migrations', 'Intuitive API'], cons: ['Abstraction limitations', 'Binary dependency'], bestWhen: 'TypeScript projects, DX is priority' },
             { name: 'Drizzle', pros: ['SQL-like syntax but type-safe', 'Lighter than Prisma', 'No binary'], cons: ['Newer', 'Less mature'], bestWhen: 'Want ORM benefits but closer to SQL' },
@@ -262,7 +262,7 @@ export const categories: Category[] = [
           id: '4.5',
           title: 'Caching Strategy',
           description: 'Improving performance through data caching.',
-          phase: null,
+          phase: 4,
           options: [
             { name: 'In-Memory (LRU)', pros: ['Simple', 'No external dependency'], cons: ['Per-instance', 'Lost on restart'], bestWhen: 'Single-instance apps, small datasets' },
             { name: 'Redis', pros: ['Fast', 'Versatile', 'Shared across instances'], cons: ['Additional infrastructure'], bestWhen: 'Most caching needs, sessions, rate limiting' },
@@ -297,7 +297,7 @@ export const categories: Category[] = [
           id: '5.3',
           title: 'Authorization Model',
           description: 'How you control what users can do.',
-          phase: null,
+          phase: 2,
           options: [
             { name: 'RBAC (Role-Based)', pros: ['Simple', 'Well-understood', 'Common pattern'], cons: ['Can explode with many roles', 'Not resource-specific'], bestWhen: 'Clear roles (admin, user, moderator)' },
             { name: 'ABAC (Attribute-Based)', pros: ['Fine-grained', 'Flexible policies'], cons: ['Complex', 'Harder to reason about'], bestWhen: 'Complex authorization, regulatory requirements' },
@@ -311,7 +311,7 @@ export const categories: Category[] = [
           id: '5.4',
           title: 'Auth Provider',
           description: 'Build vs buy your authentication system.',
-          phase: null,
+          phase: 2,
           options: [
             { name: 'Build Your Own', pros: ['Full control', 'No cost'], cons: ['Security risk if done wrong', 'Significant effort'], bestWhen: 'Very simple needs OR dedicated security expertise' },
             { name: 'Auth.js / NextAuth', pros: ['Open-source', 'Framework-integrated', 'Many providers'], cons: ['Can be complex', 'Some footguns'], bestWhen: 'Next.js apps, open-source preference' },
@@ -348,7 +348,7 @@ export const categories: Category[] = [
           id: '7.2',
           title: 'Compute Platform',
           description: 'Where your code actually runs.',
-          phase: null,
+          phase: 1,
           options: [
             { name: 'Vercel', pros: ['Excellent DX for Next.js', 'Edge functions', 'Previews'], cons: ['Vendor lock-in', 'Cost at scale'], bestWhen: 'Next.js projects, excellent DX' },
             { name: 'Railway / Render', pros: ['Simple Heroku-like', 'Modern'], cons: ['Less feature-rich than big clouds'], bestWhen: 'Startups, side projects, simplicity' },
