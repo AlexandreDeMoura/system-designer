@@ -195,7 +195,8 @@ export const categories: Category[] = [
           id: '3.3',
           title: 'Backend Architecture Pattern',
           description: 'High-level structure of your server application.',
-          phase: null,
+          phase: 2
+          ,
           options: [
             { name: 'Layered / N-Tier', pros: ['Simple', 'Well-understood', 'Separation of concerns'], cons: ['Can become anemic domain', 'Layers for layers\' sake'], bestWhen: 'CRUD-heavy apps, traditional web apps' },
             { name: 'Clean Architecture / Hexagonal', pros: ['Framework-agnostic domain', 'Highly testable', 'Clear dependency rules'], cons: ['More boilerplate', 'Heavyweight for simple apps'], bestWhen: 'Complex business logic, domain-driven teams' },
