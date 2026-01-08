@@ -58,14 +58,28 @@ export function DecisionCard({ decision, categoryColor, isHighlighted }: Decisio
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                       </svg>
                     </summary>
-                    <div className="mt-2 ml-7 p-3 bg-slate-800/30 rounded-lg text-sm space-y-2">
+                    <div className="mt-2 ml-2 p-3 bg-slate-800/30 rounded-lg text-sm space-y-2">
                       <div>
                         <span className="text-emerald-400 text-xs uppercase tracking-wider">Pros:</span>
-                        <p className="text-slate-300 mt-1">{option.pros.join(' • ')}</p>
+                        <ul className="text-slate-300 mt-1 space-y-1">
+                          {option.pros.map((pro, idx) => (
+                            <li key={idx} className="flex items-start gap-2">
+                              <span className="text-emerald-400">•</span>
+                              <span>{pro}</span>
+                            </li>
+                          ))}
+                        </ul>
                       </div>
                       <div>
                         <span className="text-rose-400 text-xs uppercase tracking-wider">Cons:</span>
-                        <p className="text-slate-300 mt-1">{option.cons.join(' • ')}</p>
+                        <ul className="text-slate-300 mt-1 space-y-1">
+                          {option.cons.map((con, idx) => (
+                            <li key={idx} className="flex items-start gap-2">
+                              <span className="text-rose-400">•</span>
+                              <span>{con}</span>
+                            </li>
+                          ))}
+                        </ul>
                       </div>
                       <div>
                         <span className="text-cyan-400 text-xs uppercase tracking-wider">Best When:</span>
