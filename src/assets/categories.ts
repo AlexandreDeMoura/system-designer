@@ -1,4 +1,4 @@
-import type { Category } from "../App";
+import type { Category } from "../types";
 import { 
   SquareMousePointer, 
   Network, 
