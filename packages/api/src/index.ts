@@ -1,6 +1,7 @@
 import superjson from "superjson";
 import { initTRPC } from "@trpc/server";
 import { z } from "zod";
+import { createLLMProvider, type StreamChunk, type LLMProvider } from "./llm/index.js";
 
 const t = initTRPC.create({
   transformer: superjson,
@@ -8,6 +9,42 @@ const t = initTRPC.create({
 
 export const router = t.router;
 export const publicProcedure = t.procedure;
+
+// Lazy initialization to ensure env vars are loaded first
+let llmProvider: LLMProvider | null = null;
+
+function getLLMProvider(): LLMProvider {
+  if (!llmProvider) {
+    llmProvider = createLLMProvider("anthropic", {
+      apiKey: process.env.ANTHROPIC_API_KEY ?? "",
+      model: "claude-sonnet-4-20250514",
+      maxTokens: 4096,
+    });
+  }
+  return llmProvider;
+}
+
+// Schema for chat messages
+const chatMessageSchema = z.object({
+  role: z.enum(["user", "assistant"]),
+  content: z.string(),
+});
+
+// Schema for decision context
+const decisionContextSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  description: z.string(),
+  options: z.array(
+    z.object({
+      name: z.string(),
+      pros: z.array(z.string()),
+      cons: z.array(z.string()),
+      bestWhen: z.string(),
+    })
+  ),
+  questions: z.array(z.string()),
+});
 
 export const appRouter = t.router({
   hello: t.procedure
@@ -20,7 +57,47 @@ export const appRouter = t.router({
   getCategories: t.procedure.query(() => {
     return { message: "Categories endpoint ready - connect to your data source" };
   }),
+
+  // Streaming chat procedure using async generators (tRPC v11)
+  chat: t.procedure
+    .input(
+      z.object({
+        messages: z.array(chatMessageSchema),
+        decision: decisionContextSchema,
+      })
+    )
+    .mutation(async function* ({ input }): AsyncGenerator<StreamChunk> {
+      const systemPrompt = `You are a helpful system design assistant. You're helping a developer make decisions about their system architecture.
+
+Current Decision Context:
+- Decision: ${input.decision.title}
+- Description: ${input.decision.description}
+
+Available Options:
+${input.decision.options
+  .map(
+    (opt, i) => `${i + 1}. ${opt.name}
+   Pros: ${opt.pros.join(", ")}
+   Cons: ${opt.cons.join(", ")}
+   Best When: ${opt.bestWhen}`
+  )
+  .join("\n\n")}
+
+Questions to Consider:
+${input.decision.questions.map((q) => `- ${q}`).join("\n")}
+
+Help the user understand the tradeoffs and make an informed decision based on their specific requirements. Be concise but thorough. Ask clarifying questions if needed to give better recommendations.`;
+
+      for await (const chunk of getLLMProvider().streamChat(
+        input.messages,
+        systemPrompt
+      )) {
+        yield chunk;
+      }
+    }),
 });
 
 export type AppRouter = typeof appRouter;
 
+// Re-export types for consumers
+export type { ChatMessage, StreamChunk } from "./llm/index.js";
