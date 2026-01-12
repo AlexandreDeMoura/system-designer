@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { X, Send, Trash2, StopCircle, Sparkles, User } from 'lucide-react'
+import { X, ArrowUp, Trash2, Square, Sparkles, User } from 'lucide-react'
 import clsx from 'clsx'
 import { useChat, type ChatMessage } from '../hooks/useChat'
 import type { Decision } from '../types'
@@ -171,39 +171,43 @@ export function ChatModal({ decision, isOpen, onClose, categoryColor }: ChatModa
 
         {/* Input */}
         <form onSubmit={handleSubmit} className="p-4 border-t border-slate-700/50 bg-slate-800/30">
-          <div className={clsx('flex items-end gap-3 rounded-xl border p-1', accent.border, 'bg-slate-800/50')}>
+          <div className={clsx('relative rounded-xl border', accent.border, 'bg-slate-800/50')}>
             <textarea
               ref={inputRef}
               value={input}
-              onChange={(e) => setInput(e.target.value)}
+              onChange={(e) => {
+                setInput(e.target.value)
+                e.target.style.height = 'auto'
+                e.target.style.height = `${Math.min(e.target.scrollHeight, 160)}px`
+              }}
               onKeyDown={handleKeyDown}
               placeholder="Ask about this decision..."
               rows={1}
-              className="flex-1 bg-transparent text-slate-100 placeholder-slate-500 px-3 py-2 resize-none focus:outline-none text-sm max-h-32"
-              style={{ minHeight: '40px' }}
+              className="w-full bg-transparent text-slate-100 placeholder-slate-500 px-4 py-3 pr-14 resize-none focus:outline-none text-sm"
+              style={{ minHeight: '48px', maxHeight: '160px' }}
             />
             {isLoading ? (
               <button
                 type="button"
                 onClick={stopGeneration}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-rose-500/20 text-rose-400 hover:bg-rose-500/30 transition-colors"
+                className="absolute bottom-2 right-2 w-8 h-8 flex items-center justify-center rounded-lg bg-rose-500/20 text-rose-400 hover:bg-rose-500/30 transition-colors"
+                title="Stop"
               >
-                <StopCircle className="w-4 h-4" />
-                <span className="text-sm font-medium">Stop</span>
+                <Square className="w-4 h-4 fill-current" />
               </button>
             ) : (
               <button
                 type="submit"
                 disabled={!input.trim()}
                 className={clsx(
-                  'cursor-pointer flex items-center gap-2 px-4 py-2 rounded-lg transition-all',
+                  'cursor-pointer absolute bottom-2 right-2 w-8 h-8 flex items-center justify-center rounded-lg transition-all',
                   input.trim()
                     ? clsx('bg-linear-to-r', accent.gradient, 'text-white hover:opacity-90')
                     : 'bg-slate-700/50 text-slate-500 cursor-not-allowed'
                 )}
+                title="Send"
               >
-                <Send className="w-4 h-4" />
-                <span className="text-sm font-medium">Send</span>
+                <ArrowUp className="w-4 h-4" />
               </button>
             )}
           </div>
