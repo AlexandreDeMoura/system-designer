@@ -252,7 +252,7 @@ button:focus-visible,
 @keyframes message-in {
   from {
     opacity: 0;
-    transform: translateY(8px);
+    transform: translateY(12px);
   }
   to {
     opacity: 1;
@@ -261,5 +261,45 @@ button:focus-visible,
 }
 
 .animate-message-in {
-  animation: message-in 0.3s ease-out forwards;
+  animation: message-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Chat container animation */
+@keyframes chat-container-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-chat-container-in {
+  animation: chat-container-in 0.3s ease-out forwards;
+}
+
+/* Empty state animation */
+@keyframes empty-state-in {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-empty-state-in {
+  animation: empty-state-in 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Typing bounce for streaming indicator */
+@keyframes typing-bounce {
+  0%, 60%, 100% {
+    transform: translateY(0);
+  }
+  30% {
+    transform: translateY(-4px);
+  }
 }
