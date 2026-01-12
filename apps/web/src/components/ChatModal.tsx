@@ -17,6 +17,8 @@ export function ChatModal({ decision, isOpen, onClose, categoryColor, nudges }: 
   const [input, setInput] = useState('')
   const [error, setError] = useState<string | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const messagesContainerRef = useRef<HTMLDivElement>(null)
+  const shouldAutoScrollRef = useRef(true)
   const inputRef = useRef<HTMLTextAreaElement>(null)
 
   const { messages, isLoading, sendMessage, clearMessages, stopGeneration } = useChat({
@@ -24,16 +26,24 @@ export function ChatModal({ decision, isOpen, onClose, categoryColor, nudges }: 
     onError: setError,
   })
 
-  // Auto-scroll to bottom when new messages arrive
+  // Auto-scroll to bottom when new messages arrive if the user is already there
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages])
+    if (!isOpen || !shouldAutoScrollRef.current) return
+    messagesEndRef.current?.scrollIntoView({ behavior: 'auto' })
+  }, [messages, isOpen])
 
   // Focus input when modal opens
   useEffect(() => {
     if (isOpen) {
       setTimeout(() => inputRef.current?.focus(), 100)
     }
+  }, [isOpen])
+
+  // Reset auto-scroll when opening the modal
+  useEffect(() => {
+    if (!isOpen) return
+    shouldAutoScrollRef.current = true
+    messagesEndRef.current?.scrollIntoView({ behavior: 'auto' })
   }, [isOpen])
 
   // Handle keyboard shortcuts
@@ -73,6 +83,14 @@ export function ChatModal({ decision, isOpen, onClose, categoryColor, nudges }: 
       e.preventDefault()
       handleSubmit(e)
     }
+  }
+
+  const handleMessagesScroll = () => {
+    const container = messagesContainerRef.current
+    if (!container) return
+    const bottomOffset = 8
+    const distanceFromBottom = container.scrollHeight - container.scrollTop - container.clientHeight
+    shouldAutoScrollRef.current = distanceFromBottom <= bottomOffset
   }
 
   const accentColors: Record<string, { gradient: string; text: string; bg: string; border: string }> = {
@@ -128,7 +146,11 @@ export function ChatModal({ decision, isOpen, onClose, categoryColor, nudges }: 
         </div>
 
         {/* Messages */}
-        <div className="flex-1 overflow-y-auto p-5 space-y-4">
+        <div
+          ref={messagesContainerRef}
+          onScroll={handleMessagesScroll}
+          className="flex-1 overflow-y-auto p-5 space-y-4"
+        >
           {messages.length === 0 && (
             <div className="flex flex-col items-center justify-center h-full text-center">
               <div className={clsx('w-16 h-16 rounded-2xl flex items-center justify-center mb-4', accent.bg)}>
@@ -282,4 +304,3 @@ function StreamingCursor() {
     </span>
   )
 }
-
