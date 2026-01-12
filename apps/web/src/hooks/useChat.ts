@@ -25,14 +25,12 @@ export function useChat({ decision, onError }: UseChatOptions) {
     async (content: string) => {
       if (!content.trim() || isLoading) return
 
-      // Create user message
       const userMessage: ChatMessage = {
         id: crypto.randomUUID(),
         role: 'user',
         content: content.trim(),
       }
 
-      // Create placeholder for assistant response
       const assistantMessage: ChatMessage = {
         id: crypto.randomUUID(),
         role: 'assistant',
@@ -43,17 +41,14 @@ export function useChat({ decision, onError }: UseChatOptions) {
       setMessages((prev) => [...prev, userMessage, assistantMessage])
       setIsLoading(true)
 
-      // Create abort controller for this request
       abortControllerRef.current = new AbortController()
 
       try {
-        // Build messages array for API (without IDs and streaming flag)
         const apiMessages = [...messages, userMessage].map((msg) => ({
           role: msg.role,
           content: msg.content,
         }))
 
-        // Prepare decision context for API
         const decisionContext = {
           id: decision.id,
           title: decision.title,
@@ -67,16 +62,13 @@ export function useChat({ decision, onError }: UseChatOptions) {
           questions: decision.questions,
         }
 
-        // Use the streaming mutation
         const stream = await chatMutation.mutateAsync({
           messages: apiMessages,
           decision: decisionContext,
         })
 
-        // Process the async generator stream
         let fullContent = ''
         
-        // The stream is an async iterable
         for await (const chunk of stream) {
           if (chunk.type === 'text_delta' && chunk.content) {
             fullContent += chunk.content
@@ -89,7 +81,6 @@ export function useChat({ decision, onError }: UseChatOptions) {
             )
           } else if (chunk.type === 'error') {
             onError?.(chunk.error ?? 'An error occurred')
-            // Remove the empty assistant message on error
             setMessages((prev) =>
               prev.filter((msg) => msg.id !== assistantMessage.id)
             )
@@ -108,7 +99,6 @@ export function useChat({ decision, onError }: UseChatOptions) {
         const errorMessage =
           error instanceof Error ? error.message : 'Failed to send message'
         onError?.(errorMessage)
-        // Remove the empty assistant message on error
         setMessages((prev) =>
           prev.filter((msg) => msg.id !== assistantMessage.id)
         )
@@ -129,7 +119,6 @@ export function useChat({ decision, onError }: UseChatOptions) {
       abortControllerRef.current.abort()
       abortControllerRef.current = null
       setIsLoading(false)
-      // Mark the last message as not streaming
       setMessages((prev) =>
         prev.map((msg, idx) =>
           idx === prev.length - 1 ? { ...msg, isStreaming: false } : msg

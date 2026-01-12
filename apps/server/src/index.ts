@@ -20,5 +20,5 @@ await server.register(fastifyTRPCPlugin, {
 const port = Number(process.env.PORT) || 3000;
 
 await server.listen({ port, host: "127.0.0.1" });
-console.log(`🚀 Server running at http://127.0.0.1:${port}`);
+console.log(`Server running at http://127.0.0.1:${port}`);
 
