@@ -18,6 +18,11 @@ export const categories: Category[] = [
       name: 'Front-End',
       icon: SquareMousePointer,
       color: 'blue',
+      nudges: [
+        "Which framework is best for my team size?",
+        "Should I use SSR or CSR for my app?",
+        "What's the best state management approach?"
+      ],
       decisions: [
         {
           id: '1.1',
@@ -124,6 +129,11 @@ export const categories: Category[] = [
       name: 'Client-Server Interface',
       icon: Network,
       color: 'cyan',
+      nudges: [
+        "REST vs GraphQL for my use case?",
+        "Do I need real-time communication?",
+        "How should I handle API versioning?"
+      ],
       decisions: [
         {
           id: '2.1',
@@ -160,6 +170,11 @@ export const categories: Category[] = [
       name: 'Back-End',
       icon: Server,
       color: 'violet',
+      nudges: [
+        "Which runtime fits my workload?",
+        "Monolith or microservices for my scale?",
+        "What backend framework should I use?"
+      ],
       decisions: [
         {
           id: '3.1',
@@ -214,6 +229,11 @@ export const categories: Category[] = [
       name: 'Data Layer',
       icon: Database,
       color: 'emerald',
+      nudges: [
+        "SQL or NoSQL for my data model?",
+        "Which ORM should I choose?",
+        "How should I handle caching?"
+      ],
       decisions: [
         {
           id: '4.1',
@@ -279,6 +299,11 @@ export const categories: Category[] = [
       name: 'Auth & Security',
       icon: LockKeyhole,
       color: 'rose',
+      nudges: [
+        "Build auth or use a provider?",
+        "Which authentication method fits my users?",
+        "How should I handle authorization?"
+      ],
       decisions: [
         {
           id: '5.1',
@@ -330,6 +355,11 @@ export const categories: Category[] = [
       name: 'DevOps & Infrastructure',
       icon: Cloud,
       color: 'amber',
+      nudges: [
+        "Serverless or containers for my app?",
+        "Which hosting platform should I use?",
+        "How should I set up CI/CD?"
+      ],
       decisions: [
         {
           id: '7.1',
@@ -379,6 +409,11 @@ export const categories: Category[] = [
       name: 'Observability',
       icon: ChartBar,
       color: 'cyan',
+      nudges: [
+        "How should I handle logging?",
+        "Which error tracking tool is best?",
+        "Do I need distributed tracing?"
+      ],
       decisions: [
         {
           id: '8.1',
@@ -412,6 +447,11 @@ export const categories: Category[] = [
       name: 'Testing Strategy',
       icon: BugPlay,
       color: 'emerald',
+      nudges: [
+        "Unit tests vs integration tests balance?",
+        "Which testing framework should I use?",
+        "How much test coverage do I need?"
+      ],
       decisions: [
         {
           id: '9.1',
@@ -445,6 +485,11 @@ export const categories: Category[] = [
       name: 'Developer Experience',
       icon: Braces,
       color: 'violet',
+      nudges: [
+        "Monorepo or polyrepo for my project?",
+        "Which linting tools should I set up?",
+        "Do I need feature flags?"
+      ],
       decisions: [
         {
           id: '10.1',
@@ -492,6 +537,11 @@ export const categories: Category[] = [
       name: 'Cross-Cutting Concerns',
       icon: CircleEllipsis,
       color: 'rose',
+      nudges: [
+        "Do I need internationalization?",
+        "Which analytics tool should I use?",
+        "How do I set performance budgets?"
+      ],
       decisions: [
         {
           id: '11.1',

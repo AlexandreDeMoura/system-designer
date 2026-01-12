@@ -23,6 +23,7 @@ export interface Category {
   name: string
   icon: LucideIcon
   color: string
+  nudges: [string, string, string]
   decisions: Decision[]
 }
 

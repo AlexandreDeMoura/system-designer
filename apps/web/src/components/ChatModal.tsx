@@ -10,9 +10,10 @@ interface ChatModalProps {
   isOpen: boolean
   onClose: () => void
   categoryColor: string
+  nudges: [string, string, string]
 }
 
-export function ChatModal({ decision, isOpen, onClose, categoryColor }: ChatModalProps) {
+export function ChatModal({ decision, isOpen, onClose, categoryColor, nudges }: ChatModalProps) {
   const [input, setInput] = useState('')
   const [error, setError] = useState<string | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
@@ -139,11 +140,7 @@ export function ChatModal({ decision, isOpen, onClose, categoryColor }: ChatModa
                 I'll help you understand the tradeoffs and make the right choice for your project.
               </p>
               <div className="mt-6 flex flex-wrap gap-2 justify-center max-w-md">
-                {[
-                  "What's best for a small team?",
-                  "Compare the top 2 options",
-                  "What should I consider first?",
-                ].map((suggestion) => (
+                {nudges.map((suggestion) => (
                   <button
                     key={suggestion}
                     onClick={() => {

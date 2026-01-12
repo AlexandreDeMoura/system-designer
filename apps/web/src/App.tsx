@@ -9,7 +9,7 @@ import type { Decision, Phase } from './types'
 
 function App() {
   const [activePhase, setActivePhase] = useState<Phase>(null)
-  const [chatDecision, setChatDecision] = useState<{ decision: Decision; categoryColor: string } | null>(null)
+  const [chatDecision, setChatDecision] = useState<{ decision: Decision; categoryColor: string; nudges: [string, string, string] } | null>(null)
 
   return (
     <div className="min-h-screen blueprint-grid">
@@ -24,7 +24,7 @@ function App() {
               key={category.id} 
               category={category} 
               activePhase={activePhase}
-              onOpenChat={(decision) => setChatDecision({ decision, categoryColor: category.color })}
+              onOpenChat={(decision) => setChatDecision({ decision, categoryColor: category.color, nudges: category.nudges })}
             />
           ))}
         </main>
@@ -41,6 +41,7 @@ function App() {
           isOpen
           onClose={() => setChatDecision(null)}
           categoryColor={chatDecision.categoryColor}
+          nudges={chatDecision.nudges}
         />
       )}
     </div>
