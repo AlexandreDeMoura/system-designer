@@ -1,14 +1,15 @@
 import clsx from 'clsx'
 import { categoryColors } from '../theme'
 import { DecisionCard } from './DecisionCard'
-import type { Category, Phase } from '../types'
+import type { Category, Decision, Phase } from '../types'
 
 interface CategorySectionProps {
   category: Category
   activePhase: Phase
+  onOpenChat: (decision: Decision) => void
 }
 
-export function CategorySection({ category, activePhase }: CategorySectionProps) {
+export function CategorySection({ category, activePhase, onOpenChat }: CategorySectionProps) {
   const colors = categoryColors[category.color]
   const filteredDecisions = activePhase === null 
     ? category.decisions 
@@ -36,6 +37,7 @@ export function CategorySection({ category, activePhase }: CategorySectionProps)
             decision={decision} 
             categoryColor={category.color}
             isHighlighted={activePhase === null || decision.phase === activePhase}
+            onOpenChat={() => onOpenChat(decision)}
           />
         ))}
       </div>

@@ -2,24 +2,22 @@ import { useState } from 'react'
 import clsx from 'clsx'
 import { MessageSquareText } from 'lucide-react'
 import { phaseColors, categoryColors } from '../theme'
-import { ChatModal } from './ChatModal'
 import type { Decision } from '../types'
 
 interface DecisionCardProps {
   decision: Decision
   categoryColor: string
   isHighlighted: boolean
+  onOpenChat: () => void
 }
 
-export function DecisionCard({ decision, categoryColor, isHighlighted }: DecisionCardProps) {
+export function DecisionCard({ decision, categoryColor, isHighlighted, onOpenChat }: DecisionCardProps) {
   const [isExpanded, setIsExpanded] = useState(false)
-  const [isChatOpen, setIsChatOpen] = useState(false)
   const phaseColor = decision.phase ? phaseColors[decision.phase] : null
   const catColor = categoryColors[categoryColor]
 
   return (
-    <>
-      <div 
+    <div 
         className={clsx(
           'decision-card rounded-xl border transition-all cursor-pointer',
           isHighlighted ? 'opacity-100' : 'opacity-40',
@@ -123,7 +121,7 @@ export function DecisionCard({ decision, categoryColor, isHighlighted }: Decisio
             )}
             onClick={(e) => {
               e.stopPropagation()
-              setIsChatOpen(true)
+              onOpenChat()
             }}
           >
             <MessageSquareText className="w-2 h-2" />
@@ -135,14 +133,5 @@ export function DecisionCard({ decision, categoryColor, isHighlighted }: Decisio
 
         </div>
       </div>
-
-      {/* Chat Modal */}
-      <ChatModal
-        decision={decision}
-        isOpen={isChatOpen}
-        onClose={() => setIsChatOpen(false)}
-        categoryColor={categoryColor}
-      />
-    </>
   )
 }

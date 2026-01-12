@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { X, ArrowUp, Trash2, Square, Sparkles, User } from 'lucide-react'
 import clsx from 'clsx'
 import { useChat, type ChatMessage } from '../hooks/useChat'
@@ -45,6 +46,18 @@ export function ChatModal({ decision, isOpen, onClose, categoryColor }: ChatModa
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [isOpen, onClose])
 
+  // Lock body scroll when modal is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = ''
+    }
+    return () => {
+      document.body.style.overflow = ''
+    }
+  }, [isOpen])
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (input.trim()) {
@@ -61,8 +74,6 @@ export function ChatModal({ decision, isOpen, onClose, categoryColor }: ChatModa
     }
   }
 
-  if (!isOpen) return null
-
   const accentColors: Record<string, { gradient: string; text: string; bg: string; border: string }> = {
     blue: { gradient: 'from-blue-500 to-blue-600', text: 'text-blue-400', bg: 'bg-blue-500/20', border: 'border-blue-500/30' },
     cyan: { gradient: 'from-cyan-500 to-cyan-600', text: 'text-cyan-400', bg: 'bg-cyan-500/20', border: 'border-cyan-500/30' },
@@ -76,11 +87,13 @@ export function ChatModal({ decision, isOpen, onClose, categoryColor }: ChatModa
 
   const accent = accentColors[categoryColor] ?? accentColors.blue
 
-  return (
+  if (!isOpen) return null
+
+  return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Backdrop */}
       <div 
-        className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+        className="fixed inset-0 bg-black/20 backdrop-blur-sm"
         onClick={onClose}
       />
       
@@ -216,7 +229,8 @@ export function ChatModal({ decision, isOpen, onClose, categoryColor }: ChatModa
           </p>
         </form>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }
 

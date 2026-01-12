@@ -4,10 +4,12 @@ import { Header } from './components/Header'
 import { PhaseSelector } from './components/PhaseSelector'
 import { Stats } from './components/Stats'
 import { CategorySection } from './components/CategorySection'
-import type { Phase } from './types'
+import { ChatModal } from './components/ChatModal'
+import type { Decision, Phase } from './types'
 
 function App() {
   const [activePhase, setActivePhase] = useState<Phase>(null)
+  const [chatDecision, setChatDecision] = useState<{ decision: Decision; categoryColor: string } | null>(null)
 
   return (
     <div className="min-h-screen blueprint-grid">
@@ -22,6 +24,7 @@ function App() {
               key={category.id} 
               category={category} 
               activePhase={activePhase}
+              onOpenChat={(decision) => setChatDecision({ decision, categoryColor: category.color })}
             />
           ))}
         </main>
@@ -31,6 +34,15 @@ function App() {
           <p className="mt-2 text-slate-600">Filter by phase to focus on what matters at each stage.</p>
         </footer>
       </div>
+
+      {chatDecision && (
+        <ChatModal
+          decision={chatDecision.decision}
+          isOpen
+          onClose={() => setChatDecision(null)}
+          categoryColor={chatDecision.categoryColor}
+        />
+      )}
     </div>
   )
 }
