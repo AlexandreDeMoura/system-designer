@@ -1,9 +1,10 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, memo } from 'react'
 import { createPortal } from 'react-dom'
 import { X, Trash2, Square, MessageSquare, User } from 'lucide-react'
 import clsx from 'clsx'
 import { useChat, type ChatMessage } from '../hooks/useChat'
 import { phaseColors, categoryColors } from '../theme'
+import { MarkdownRenderer } from './MarkdownRenderer'
 import type { Decision } from '../types'
 
 interface ChatModalProps {
@@ -390,7 +391,7 @@ interface MessageBubbleProps {
   message: ChatMessage
 }
 
-function MessageBubble({ message }: MessageBubbleProps) {
+const MessageBubble = memo(function MessageBubble({ message }: MessageBubbleProps) {
   const isUser = message.role === 'user'
 
   return (
@@ -404,7 +405,7 @@ function MessageBubble({ message }: MessageBubbleProps) {
       )}>
         {/* Avatar */}
         <div className={clsx(
-          'shrink-0 w-8 h-8 rounded-full flex items-center justify-center',
+          'shrink-0 w-8 h-8 rounded-full flex items-center justify-center mt-1',
           isUser 
             ? 'bg-[#2a3a4a]' 
             : 'bg-[#1a2332] border border-[#2a3a4a]'
@@ -420,30 +421,24 @@ function MessageBubble({ message }: MessageBubbleProps) {
         
         {/* Message content */}
         <div className={clsx(
-          'pt-1',
-          isUser && 'bg-[#1a2a3a] rounded-2xl rounded-tr-sm px-4 py-3'
+          'min-w-0', // Allow content to shrink for code overflow
+          isUser 
+            ? 'bg-[#1a2a3a] rounded-2xl rounded-tr-sm px-4 py-3' 
+            : 'pt-1'
         )}>
-          <p className={clsx(
-            'text-[15px] whitespace-pre-wrap leading-[1.7]',
-            isUser ? 'text-[#e4e8ed]' : 'text-[#c8d1dc]'
-          )}>
-            {message.content || (message.isStreaming && <StreamingIndicator />)}
-          </p>
-          {message.isStreaming && message.content && (
-            <StreamingIndicator />
+          {isUser ? (
+            <p className="text-[15px] whitespace-pre-wrap leading-[1.7] text-[#e4e8ed]">
+              {message.content}
+            </p>
+          ) : (
+            // Assistant messages: full markdown rendering
+            <MarkdownRenderer 
+              content={message.content} 
+              isStreaming={message.isStreaming} 
+            />
           )}
         </div>
       </div>
     </div>
   )
-}
-
-function StreamingIndicator() {
-  return (
-    <span className="inline-flex items-center gap-1 ml-1 align-middle">
-      <span className="w-1.5 h-1.5 rounded-full bg-[#6b7c93] animate-pulse" />
-      <span className="w-1.5 h-1.5 rounded-full bg-[#6b7c93] animate-pulse [animation-delay:150ms]" />
-      <span className="w-1.5 h-1.5 rounded-full bg-[#6b7c93] animate-pulse [animation-delay:300ms]" />
-    </span>
-  )
-}
+})
