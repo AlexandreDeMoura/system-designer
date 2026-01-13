@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import { trpc } from '../trpc'
 import type { Decision } from '../types'
 
@@ -18,8 +18,81 @@ export function useChat({ decision, onError }: UseChatOptions) {
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const abortControllerRef = useRef<AbortController | null>(null)
+  
+  // RAF-based batching refs
+  const tokenBufferRef = useRef('')
+  const currentMessageIdRef = useRef<string | null>(null)
+  const rafIdRef = useRef<number | null>(null)
+  const isStreamingRef = useRef(false)
 
   const chatMutation = trpc.chat.useMutation()
+
+  // Flush buffered tokens to state - runs on animation frame
+  const flushTokenBuffer = useCallback(() => {
+    if (tokenBufferRef.current && currentMessageIdRef.current) {
+      const bufferedContent = tokenBufferRef.current
+      const messageId = currentMessageIdRef.current
+      
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.id === messageId
+            ? { ...msg, content: msg.content + bufferedContent }
+            : msg
+        )
+      )
+      
+      tokenBufferRef.current = ''
+    }
+    
+    // Schedule next frame if still streaming
+    if (isStreamingRef.current) {
+      rafIdRef.current = requestAnimationFrame(flushTokenBuffer)
+    }
+  }, [])
+
+  // Start RAF loop when streaming begins
+  const startStreamingLoop = useCallback((messageId: string) => {
+    currentMessageIdRef.current = messageId
+    isStreamingRef.current = true
+    tokenBufferRef.current = ''
+    rafIdRef.current = requestAnimationFrame(flushTokenBuffer)
+  }, [flushTokenBuffer])
+
+  // Stop RAF loop when streaming ends
+  const stopStreamingLoop = useCallback(() => {
+    isStreamingRef.current = false
+    
+    // Final flush of any remaining tokens
+    if (tokenBufferRef.current && currentMessageIdRef.current) {
+      const bufferedContent = tokenBufferRef.current
+      const messageId = currentMessageIdRef.current
+      
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.id === messageId
+            ? { ...msg, content: msg.content + bufferedContent, isStreaming: false }
+            : msg
+        )
+      )
+    }
+    
+    if (rafIdRef.current) {
+      cancelAnimationFrame(rafIdRef.current)
+      rafIdRef.current = null
+    }
+    
+    tokenBufferRef.current = ''
+    currentMessageIdRef.current = null
+  }, [])
+
+  // Cleanup RAF on unmount
+  useEffect(() => {
+    return () => {
+      if (rafIdRef.current) {
+        cancelAnimationFrame(rafIdRef.current)
+      }
+    }
+  }, [])
 
   const sendMessage = async (content: string) => {
     if (!content.trim() || isLoading) return
@@ -41,6 +114,9 @@ export function useChat({ decision, onError }: UseChatOptions) {
     setIsLoading(true)
 
     abortControllerRef.current = new AbortController()
+    
+    // Start the RAF-based streaming loop
+    startStreamingLoop(assistantMessage.id)
 
     try {
       const apiMessages = [...messages, userMessage].map((msg) => ({
@@ -66,26 +142,23 @@ export function useChat({ decision, onError }: UseChatOptions) {
         decision: decisionContext,
       })
 
-      let fullContent = ''
-
       for await (const chunk of stream) {
         if (chunk.type === 'text_delta' && chunk.content) {
-          fullContent += chunk.content
-          setMessages((prev) =>
-            prev.map((msg) =>
-              msg.id === assistantMessage.id
-                ? { ...msg, content: fullContent }
-                : msg
-            )
-          )
+          // Buffer tokens instead of immediately updating state
+          // The RAF loop will flush these at 60fps
+          tokenBufferRef.current += chunk.content
         } else if (chunk.type === 'error') {
           onError?.(chunk.error ?? 'An error occurred')
+          stopStreamingLoop()
           setMessages((prev) =>
             prev.filter((msg) => msg.id !== assistantMessage.id)
           )
         }
       }
 
+      // Stop streaming loop and do final state update
+      stopStreamingLoop()
+      
       // Mark streaming as complete
       setMessages((prev) =>
         prev.map((msg) =>
@@ -98,6 +171,7 @@ export function useChat({ decision, onError }: UseChatOptions) {
       const errorMessage =
         error instanceof Error ? error.message : 'Failed to send message'
       onError?.(errorMessage)
+      stopStreamingLoop()
       setMessages((prev) =>
         prev.filter((msg) => msg.id !== assistantMessage.id)
       )
@@ -108,6 +182,7 @@ export function useChat({ decision, onError }: UseChatOptions) {
   }
 
   const clearMessages = () => {
+    stopStreamingLoop()
     setMessages([])
   }
 
@@ -116,6 +191,7 @@ export function useChat({ decision, onError }: UseChatOptions) {
       abortControllerRef.current.abort()
       abortControllerRef.current = null
       setIsLoading(false)
+      stopStreamingLoop()
       setMessages((prev) =>
         prev.map((msg, idx) =>
           idx === prev.length - 1 ? { ...msg, isStreaming: false } : msg
@@ -132,4 +208,3 @@ export function useChat({ decision, onError }: UseChatOptions) {
     stopGeneration,
   }
 }
-
