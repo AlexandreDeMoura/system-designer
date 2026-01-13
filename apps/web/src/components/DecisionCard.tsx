@@ -11,10 +11,21 @@ interface DecisionCardProps {
   onOpenChat: () => void
 }
 
+
+const buttonColors: Record<string, string> = {
+  blue: 'bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 border-blue-500/30 hover:shadow-blue-500/10',
+  cyan: 'bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 border-cyan-500/30 hover:shadow-cyan-500/10',
+  violet: 'bg-violet-500/10 hover:bg-violet-500/20 text-violet-400 border-violet-500/30 hover:shadow-violet-500/10',
+  emerald: 'bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border-emerald-500/30 hover:shadow-emerald-500/10',
+  rose: 'bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border-rose-500/30 hover:shadow-rose-500/10',
+  amber: 'bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border-amber-500/30 hover:shadow-amber-500/10',
+}
+
 export function DecisionCard({ decision, categoryColor, isHighlighted, onOpenChat }: DecisionCardProps) {
   const [isExpanded, setIsExpanded] = useState(false)
   const phaseColor = decision.phase ? phaseColors[decision.phase] : null
   const catColor = categoryColors[categoryColor]
+  const btnColor = buttonColors[categoryColor] || buttonColors.blue
 
   return (
     <div 
@@ -110,22 +121,21 @@ export function DecisionCard({ decision, categoryColor, isHighlighted, onOpenCha
                   </ul>
                 </div>
               )}
-                        {/* Chat with AI Button */}
+                        {/* Chat with System Designer Button */}
           <button 
             className={clsx(
-              'w-full mt-4 py-2 px-3 rounded-lg flex items-center justify-center gap-2 font-medium transition-all',
-              'bg-linear-to-r from-slate-800/80 to-slate-800/40 border',
-              catColor.border,
-              'hover:from-slate-700/80 hover:to-slate-700/40',
-              catColor.text
+              'w-full mt-4 py-2.5 px-4 rounded-xl flex items-center justify-center gap-2.5 font-semibold transition-all duration-300 cursor-pointer',
+              'border shadow-lg',
+              btnColor,
+              'group'
             )}
             onClick={(e) => {
               e.stopPropagation()
               onOpenChat()
             }}
           >
-            <MessageSquareText className="w-2 h-2" />
-            Chat with AI
+            <MessageSquareText className="w-4 h-4 transition-transform group-hover:scale-110" />
+            Chat with System Designer
           </button>
             </div>
           )}
