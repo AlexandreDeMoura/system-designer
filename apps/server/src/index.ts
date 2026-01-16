@@ -1,5 +1,10 @@
 import { config } from "dotenv";
-config(); 
+import { fileURLToPath } from "url";
+import { dirname, resolve } from "path";
+
+// Load .env from apps/server/ directory
+const __dirname = dirname(fileURLToPath(import.meta.url));
+config({ path: resolve(__dirname, "../.env") }); 
 import Fastify from "fastify";
 import cors from "@fastify/cors";
 import { fastifyTRPCPlugin } from "@trpc/server/adapters/fastify";

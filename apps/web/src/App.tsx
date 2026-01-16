@@ -6,6 +6,7 @@ import { SearchBar } from './components/SearchBar'
 import { Stats } from './components/Stats'
 import { CategorySection } from './components/CategorySection'
 import { ChatModal } from './components/ChatModal'
+import { ProjectsModal } from './components/ProjectsModal'
 import { searchDecisions, filterCategoriesBySearch } from './utils/searchDecisions'
 import type { Decision, Phase } from './types'
 
@@ -13,6 +14,7 @@ function App() {
   const [activePhase, setActivePhase] = useState<Phase>(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [chatDecision, setChatDecision] = useState<{ decision: Decision; categoryColor: string; nudges: [string, string, string] } | null>(null)
+  const [isProjectsOpen, setIsProjectsOpen] = useState(false)
 
   const handleSearch = useCallback((query: string) => {
     setSearchQuery(query)
@@ -36,7 +38,7 @@ function App() {
   return (
     <div className="min-h-screen blueprint-grid">
       <div className="max-w-7xl mx-auto px-4 py-8">
-        <Header />
+        <Header onOpenProjects={() => setIsProjectsOpen(true)} />
         <PhaseSelector activePhase={activePhase} setActivePhase={setActivePhase} />
         
         <div className="my-6 flex justify-start">
@@ -86,6 +88,11 @@ function App() {
           nudges={chatDecision.nudges}
         />
       )}
+
+      <ProjectsModal 
+        isOpen={isProjectsOpen} 
+        onClose={() => setIsProjectsOpen(false)} 
+      />
     </div>
   )
 }
