@@ -1,8 +1,10 @@
 import { useState } from 'react'
 import { createPortal } from 'react-dom'
-import { X, Plus, FolderOpen, Loader2 } from 'lucide-react'
+import { X, Plus, FolderOpen, Loader2, Check } from 'lucide-react'
 import { trpc } from '../trpc'
 import { useAuth } from '../auth'
+import { useProject } from '../projectContext'
+import type { Project } from '@sd/api'
 
 interface ProjectsModalProps {
   isOpen: boolean
@@ -11,6 +13,7 @@ interface ProjectsModalProps {
 
 export function ProjectsModal({ isOpen, onClose }: ProjectsModalProps) {
   const { user, isLoading: isAuthLoading } = useAuth()
+  const { selectedProject, selectProject } = useProject()
   const isAuthed = !!user
   const [isCreating, setIsCreating] = useState(false)
   const [name, setName] = useState('')
@@ -18,6 +21,11 @@ export function ProjectsModal({ isOpen, onClose }: ProjectsModalProps) {
 
   const { data: projects, isLoading: isProjectsLoading, refetch } =
     trpc.getProjects.useQuery(undefined, { enabled: isOpen && isAuthed })
+
+  const handleSelectProject = (project: Project) => {
+    selectProject(project)
+    onClose()
+  }
 
   const createProject = trpc.createProject.useMutation({
     onSuccess: () => {
@@ -137,17 +145,29 @@ export function ProjectsModal({ isOpen, onClose }: ProjectsModalProps) {
                 </div>
               ) : projects && projects.length > 0 ? (
                 <div className="space-y-2">
-                  {projects.map((project) => (
-                    <div
-                      key={project.id}
-                      className="px-4 py-3 rounded-xl bg-[#0f1419] border border-[#1e2a3a] hover:border-[#2a3a4a] transition-colors"
-                    >
-                      <h3 className="font-medium text-[#e4e8ed]">{project.name}</h3>
-                      {project.description && (
-                        <p className="text-sm text-[#6b7c93] mt-1 line-clamp-2">{project.description}</p>
-                      )}
-                    </div>
-                  ))}
+                  {projects.map((project) => {
+                    const isSelected = selectedProject?.id === project.id
+                    return (
+                      <button
+                        key={project.id}
+                        type="button"
+                        onClick={() => handleSelectProject(project)}
+                        className={`cursor-pointer w-full text-left px-4 py-3 rounded-xl transition-colors ${
+                          isSelected
+                            ? 'bg-cyan-500/10 border border-cyan-500/30'
+                            : 'bg-[#0f1419] border border-[#1e2a3a] hover:border-[#2a3a4a]'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <h3 className="font-medium text-[#e4e8ed]">{project.name}</h3>
+                          {isSelected && <Check className="w-4 h-4 text-cyan-400" />}
+                        </div>
+                        {project.description && (
+                          <p className="text-sm text-[#6b7c93] mt-1 line-clamp-2">{project.description}</p>
+                        )}
+                      </button>
+                    )
+                  })}
                 </div>
               ) : (
                 <div className="text-center py-8">

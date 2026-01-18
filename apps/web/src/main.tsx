@@ -3,6 +3,7 @@ import { createRoot } from "react-dom/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { trpc, createTrpcClient } from "./trpc";
 import { AuthProvider } from "./auth";
+import { ProjectProvider } from "./projectContext";
 import App from "./App";
 import "./index.css";
 
@@ -14,7 +15,9 @@ function Root() {
     <AuthProvider>
       <trpc.Provider client={trpcClient} queryClient={queryClient}>
         <QueryClientProvider client={queryClient}>
-          <App />
+          <ProjectProvider>
+            <App />
+          </ProjectProvider>
         </QueryClientProvider>
       </trpc.Provider>
     </AuthProvider>
