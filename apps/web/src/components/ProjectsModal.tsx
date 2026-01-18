@@ -2,9 +2,7 @@ import { useState } from 'react'
 import { createPortal } from 'react-dom'
 import { X, Plus, FolderOpen, Loader2 } from 'lucide-react'
 import { trpc } from '../trpc'
-
-// Temporary hardcoded user ID (replace with actual auth later)
-const TEMP_USER_ID = '00000000-0000-0000-0000-000000000001'
+import { useAuth } from '../auth'
 
 interface ProjectsModalProps {
   isOpen: boolean
@@ -12,29 +10,30 @@ interface ProjectsModalProps {
 }
 
 export function ProjectsModal({ isOpen, onClose }: ProjectsModalProps) {
+  const { user, isLoading: isAuthLoading } = useAuth()
+  const isAuthed = !!user
   const [isCreating, setIsCreating] = useState(false)
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
 
-  const { data: projects, isLoading, refetch } = trpc.getProjects.useQuery(
-    { userId: TEMP_USER_ID },
-    { enabled: isOpen }
-  )
+  const { data: projects, isLoading: isProjectsLoading, refetch } =
+    trpc.getProjects.useQuery(undefined, { enabled: isOpen && isAuthed })
 
   const createProject = trpc.createProject.useMutation({
     onSuccess: () => {
       setIsCreating(false)
       setName('')
       setDescription('')
-      refetch()
+      if (isAuthed) {
+        refetch()
+      }
     },
   })
 
   const handleCreate = (e: React.FormEvent) => {
     e.preventDefault()
-    if (!name.trim()) return
+    if (!isAuthed || !name.trim()) return
     createProject.mutate({
-      userId: TEMP_USER_ID,
       name: name.trim(),
       description: description.trim() || undefined,
     })
@@ -70,7 +69,16 @@ export function ProjectsModal({ isOpen, onClose }: ProjectsModalProps) {
 
         {/* Content */}
         <div className="p-6 max-h-[60vh] overflow-y-auto">
-          {isCreating ? (
+          {isAuthLoading ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="w-6 h-6 text-[#6b7c93] animate-spin" />
+            </div>
+          ) : !isAuthed ? (
+            <div className="text-center py-8">
+              <p className="text-[#6b7c93]">Sign in to view your projects</p>
+              <p className="text-sm text-[#4a5a6a] mt-1">Use the sign in button in the header</p>
+            </div>
+          ) : isCreating ? (
             <form onSubmit={handleCreate} className="space-y-4">
               <div>
                 <label className="block text-sm text-[#8b9eb3] mb-2">Name</label>
@@ -123,7 +131,7 @@ export function ProjectsModal({ isOpen, onClose }: ProjectsModalProps) {
               </button>
 
               {/* Projects list */}
-              {isLoading ? (
+              {isProjectsLoading ? (
                 <div className="flex items-center justify-center py-8">
                   <Loader2 className="w-6 h-6 text-[#6b7c93] animate-spin" />
                 </div>
@@ -155,4 +163,3 @@ export function ProjectsModal({ isOpen, onClose }: ProjectsModalProps) {
     document.body
   )
 }
-

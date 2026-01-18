@@ -2,6 +2,7 @@ import { StrictMode, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { trpc, createTrpcClient } from "./trpc";
+import { AuthProvider } from "./auth";
 import App from "./App";
 import "./index.css";
 
@@ -10,11 +11,13 @@ function Root() {
   const [trpcClient] = useState(() => createTrpcClient());
 
   return (
-    <trpc.Provider client={trpcClient} queryClient={queryClient}>
-      <QueryClientProvider client={queryClient}>
-        <App />
-      </QueryClientProvider>
-    </trpc.Provider>
+    <AuthProvider>
+      <trpc.Provider client={trpcClient} queryClient={queryClient}>
+        <QueryClientProvider client={queryClient}>
+          <App />
+        </QueryClientProvider>
+      </trpc.Provider>
+    </AuthProvider>
   );
 }
 
