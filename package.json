@@ -7,7 +7,7 @@
     "packages/*"
   ],
   "scripts": {
-    "dev": "concurrently -n WEB,SERVER -c green,cyan \"npm -w @sd/web run dev\" \"npm -w @sd/server run dev\"",
+    "dev": "concurrently -n API,WEB,SERVER -c yellow,green,cyan \"npm -w @sd/api run dev\" \"npm -w @sd/web run dev\" \"npm -w @sd/server run dev\"",
     "build": "npm -w @sd/api run build && npm -w @sd/server run build && npm -w @sd/web run build",
     "lint": "npm -ws run lint"
   },
