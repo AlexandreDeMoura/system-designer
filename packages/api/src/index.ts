@@ -72,6 +72,12 @@ const decisionContextSchema = z.object({
   questions: z.array(z.string()),
 });
 
+// Schema for project context (optional)
+const projectContextSchema = z.object({
+  name: z.string(),
+  description: z.string().nullable(),
+});
+
 export const appRouter = t.router({
   hello: publicProcedure
     .input(z.object({ name: z.string().min(1) }))
@@ -149,12 +155,21 @@ export const appRouter = t.router({
       z.object({
         messages: z.array(chatMessageSchema),
         decision: decisionContextSchema,
+        project: projectContextSchema.optional(),
       })
     )
     .mutation(async function* ({ input }): AsyncGenerator<StreamChunk> {
-      const systemPrompt = `You are a helpful system design assistant. You're helping a developer make decisions about their system architecture.
+      // Build project context section if available
+      const projectSection = input.project
+        ? `
+Project Context:
+- Project Name: ${input.project.name}${input.project.description ? `\n- Project Description: ${input.project.description}` : ""}
 
-Current Decision Context:
+`
+        : "";
+
+      const systemPrompt = `You are a helpful system design assistant. You're helping a developer make decisions about their system architecture.
+${projectSection}Current Decision Context:
 - Decision: ${input.decision.title}
 - Description: ${input.decision.description}
 
@@ -171,7 +186,7 @@ ${input.decision.options
 Questions to Consider:
 ${input.decision.questions.map((q) => `- ${q}`).join("\n")}
 
-Help the user understand the tradeoffs and make an informed decision based on their specific requirements. Be concise but thorough. Ask clarifying questions if needed to give better recommendations.`;
+Help the user understand the tradeoffs and make an informed decision based on their specific requirements. Be concise but thorough. Ask clarifying questions if needed to give better recommendations.${input.project ? ` Keep in mind the user is working on "${input.project.name}"${input.project.description ? ` which is described as: ${input.project.description}` : ""}.` : ""}`;
 
       for await (const chunk of getLLMProvider().streamChat(
         input.messages,

@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom'
 import { X, Trash2, Square, MessageSquare, User } from 'lucide-react'
 import clsx from 'clsx'
 import { useChat, type ChatMessage } from '../hooks/useChat'
+import { useProject } from '../projectContext'
 import { phaseColors, categoryColors } from '../theme'
 import { MarkdownRenderer } from './MarkdownRenderer'
 import type { Decision } from '../types'
@@ -22,9 +23,11 @@ export function ChatModal({ decision, isOpen, onClose, categoryColor, nudges }: 
   const messagesContainerRef = useRef<HTMLDivElement>(null)
   const shouldAutoScrollRef = useRef(true)
   const inputRef = useRef<HTMLTextAreaElement>(null)
+  const { selectedProject } = useProject()
 
   const { messages, isLoading, sendMessage, clearMessages, stopGeneration } = useChat({
     decision,
+    project: selectedProject,
     onError: setError,
   })
 

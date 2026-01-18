@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { trpc } from '../trpc'
 import type { Decision } from '../types'
+import type { Project } from '@sd/api'
 
 export interface ChatMessage {
   id: string
@@ -11,10 +12,11 @@ export interface ChatMessage {
 
 interface UseChatOptions {
   decision: Decision
+  project?: Project | null
   onError?: (error: string) => void
 }
 
-export function useChat({ decision, onError }: UseChatOptions) {
+export function useChat({ decision, project, onError }: UseChatOptions) {
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const abortControllerRef = useRef<AbortController | null>(null)
@@ -140,6 +142,7 @@ export function useChat({ decision, onError }: UseChatOptions) {
       const stream = await chatMutation.mutateAsync({
         messages: apiMessages,
         decision: decisionContext,
+        project: project ? { name: project.name, description: project.description } : undefined,
       })
 
       for await (const chunk of stream) {
