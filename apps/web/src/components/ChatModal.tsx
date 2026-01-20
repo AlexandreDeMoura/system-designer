@@ -1,9 +1,10 @@
 import { useState, useRef, useEffect, memo } from 'react'
 import { createPortal } from 'react-dom'
-import { X, Trash2, Square, MessageSquare, User } from 'lucide-react'
+import { X, Trash2, Square, MessageSquare, User, CheckCircle } from 'lucide-react'
 import clsx from 'clsx'
-import { useChat, type ChatMessage } from '../hooks/useChat'
+import { useChat, type ChatMessage, type SaveDecisionResult } from '../hooks/useChat'
 import { useProject } from '../projectContext'
+import { trpc } from '../trpc'
 import { phaseColors, categoryColors } from '../theme'
 import { MarkdownRenderer } from './MarkdownRenderer'
 import type { Decision } from '../types'
@@ -19,16 +20,32 @@ interface ChatModalProps {
 export function ChatModal({ decision, isOpen, onClose, categoryColor, nudges }: ChatModalProps) {
   const [input, setInput] = useState('')
   const [error, setError] = useState<string | null>(null)
+  const [savedNotification, setSavedNotification] = useState<SaveDecisionResult | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const messagesContainerRef = useRef<HTMLDivElement>(null)
   const shouldAutoScrollRef = useRef(true)
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const { selectedProject } = useProject()
+  const utils = trpc.useUtils()
+
+  const handleDecisionSaved = (result: SaveDecisionResult) => {
+    if (result.success && selectedProject) {
+      // Invalidate project decisions cache to refresh the UI
+      utils.getProjectDecisions.invalidate({ projectId: selectedProject.id })
+      // Show notification
+      setSavedNotification(result)
+      // Auto-hide notification after 5 seconds
+      setTimeout(() => setSavedNotification(null), 5000)
+    } else if (!result.success) {
+      setError(result.message)
+    }
+  }
 
   const { messages, isLoading, sendMessage, clearMessages, stopGeneration } = useChat({
     decision,
     project: selectedProject,
     onError: setError,
+    onDecisionSaved: handleDecisionSaved,
   })
 
   // Auto-scroll to bottom when new messages arrive if the user is already there
@@ -177,6 +194,19 @@ export function ChatModal({ decision, isOpen, onClose, categoryColor, nudges }: 
                   <div className="flex items-center gap-3 px-4 py-3 mt-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-sm">
                     <span>⚠️</span>
                     <span>{error}</span>
+                  </div>
+                )}
+
+                {savedNotification && (
+                  <div className="flex items-center gap-3 px-4 py-3 mt-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-sm animate-message-in">
+                    <CheckCircle className="w-5 h-5 shrink-0" />
+                    <span>{savedNotification.message}</span>
+                    <button
+                      onClick={() => setSavedNotification(null)}
+                      className="ml-auto p-1 rounded hover:bg-emerald-500/20 transition-colors"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
                   </div>
                 )}
                 

@@ -1,7 +1,16 @@
 import type { LLMProvider, LLMProviderConfig } from './types.js'
 import { AnthropicProvider } from './anthropic-provider.js'
 
-export type { LLMProvider, LLMProviderConfig, ChatMessage, StreamChunk } from './types.js'
+export type {
+  LLMProvider,
+  LLMProviderConfig,
+  ChatMessage,
+  StreamChunk,
+  ToolDefinition,
+  ToolCall,
+  ToolResult,
+  StreamChatOptions,
+} from './types.js'
 export { AnthropicProvider } from './anthropic-provider.js'
 
 export type ProviderType = 'anthropic' 

@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { trpc } from '../trpc'
 import type { Decision } from '../types'
-import type { Project } from '@sd/api'
+import type { Project, ProjectDecision, ToolCall } from '@sd/api'
 
 export interface ChatMessage {
   id: string
@@ -10,13 +10,22 @@ export interface ChatMessage {
   isStreaming?: boolean
 }
 
+// Result returned when the AI saves a decision
+export interface SaveDecisionResult {
+  success: boolean
+  message: string
+  decision?: ProjectDecision
+}
+
 interface UseChatOptions {
   decision: Decision
   project?: Project | null
   onError?: (error: string) => void
+  /** Called when the AI successfully saves a decision */
+  onDecisionSaved?: (result: SaveDecisionResult) => void
 }
 
-export function useChat({ decision, project, onError }: UseChatOptions) {
+export function useChat({ decision, project, onError, onDecisionSaved }: UseChatOptions) {
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const abortControllerRef = useRef<AbortController | null>(null)
@@ -28,6 +37,7 @@ export function useChat({ decision, project, onError }: UseChatOptions) {
   const isStreamingRef = useRef(false)
 
   const chatMutation = trpc.chat.useMutation()
+  const chatWithToolsMutation = trpc.chatWithTools.useMutation()
 
   // Flush buffered tokens to state - runs on animation frame
   const flushTokenBuffer = useCallback(() => {
@@ -96,6 +106,17 @@ export function useChat({ decision, project, onError }: UseChatOptions) {
     }
   }, [])
 
+  // Handle tool calls from the LLM
+  const handleToolCall = useCallback((toolCall: ToolCall) => {
+    if (toolCall.name === 'save_decision') {
+      // The server has already executed the tool and attached the result
+      const result = (toolCall.input as { __result?: SaveDecisionResult }).__result
+      if (result) {
+        onDecisionSaved?.(result)
+      }
+    }
+  }, [onDecisionSaved])
+
   const sendMessage = async (content: string) => {
     if (!content.trim() || isLoading) return
 
@@ -139,17 +160,36 @@ export function useChat({ decision, project, onError }: UseChatOptions) {
         questions: decision.questions,
       }
 
-      const stream = await chatMutation.mutateAsync({
-        messages: apiMessages,
-        decision: decisionContext,
-        project: project ? { name: project.name, description: project.description } : undefined,
-      })
+      // Choose which mutation to use based on project availability
+      let stream: AsyncIterable<{ type: string; content?: string; error?: string; toolCall?: ToolCall }>
+      
+      if (project) {
+        // Use tool-enabled mutation for authenticated users with a project
+        stream = await chatWithToolsMutation.mutateAsync({
+          messages: apiMessages,
+          decision: decisionContext,
+          project: { 
+            id: project.id, 
+            name: project.name, 
+            description: project.description 
+          },
+        })
+      } else {
+        // Use regular mutation for unauthenticated users or no project
+        stream = await chatMutation.mutateAsync({
+          messages: apiMessages,
+          decision: decisionContext,
+        })
+      }
 
       for await (const chunk of stream) {
         if (chunk.type === 'text_delta' && chunk.content) {
           // Buffer tokens instead of immediately updating state
           // The RAF loop will flush these at 60fps
           tokenBufferRef.current += chunk.content
+        } else if (chunk.type === 'tool_use' && chunk.toolCall) {
+          // Handle tool calls from the LLM
+          handleToolCall(chunk.toolCall)
         } else if (chunk.type === 'error') {
           onError?.(chunk.error ?? 'An error occurred')
           stopStreamingLoop()
