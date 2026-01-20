@@ -10,6 +10,9 @@ export type {
   ToolCall,
   ToolResult,
   StreamChatOptions,
+  ContentBlock,
+  TextContentBlock,
+  ToolUseContentBlock,
 } from './types.js'
 export { AnthropicProvider } from './anthropic-provider.js'
 

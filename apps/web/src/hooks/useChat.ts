@@ -5,9 +5,14 @@ import type { Project, ProjectDecision, ToolCall } from '@sd/api'
 
 export interface ChatMessage {
   id: string
-  role: 'user' | 'assistant'
+  role: 'user' | 'assistant' | 'system'
   content: string
   isStreaming?: boolean
+  systemAction?: {
+    type: 'decision_saved'
+    selectedOption: string
+    success: boolean
+  }
 }
 
 // Result returned when the AI saves a decision
@@ -106,12 +111,28 @@ export function useChat({ decision, project, onError, onDecisionSaved }: UseChat
     }
   }, [])
 
-  // Handle tool calls from the LLM
+  // Handle tool calls from the LLM - add a system message to the chat
   const handleToolCall = useCallback((toolCall: ToolCall) => {
     if (toolCall.name === 'save_decision') {
       // The server has already executed the tool and attached the result
       const result = (toolCall.input as { __result?: SaveDecisionResult }).__result
+      const selectedOption = (toolCall.input as { selected_option?: string }).selected_option
+      
       if (result) {
+        // Add a system message showing the decision was saved
+        const systemMessage: ChatMessage = {
+          id: crypto.randomUUID(),
+          role: 'system',
+          content: result.message,
+          systemAction: {
+            type: 'decision_saved',
+            selectedOption: selectedOption ?? '',
+            success: result.success,
+          },
+        }
+        setMessages((prev) => [...prev, systemMessage])
+        
+        // Also notify the parent (for cache invalidation)
         onDecisionSaved?.(result)
       }
     }
@@ -142,10 +163,13 @@ export function useChat({ decision, project, onError, onDecisionSaved }: UseChat
     startStreamingLoop(assistantMessage.id)
 
     try {
-      const apiMessages = [...messages, userMessage].map((msg) => ({
-        role: msg.role,
-        content: msg.content,
-      }))
+      // Filter out system messages - they're local-only and shouldn't be sent to the API
+      const apiMessages = [...messages, userMessage]
+        .filter((msg) => msg.role !== 'system')
+        .map((msg) => ({
+          role: msg.role as 'user' | 'assistant',
+          content: msg.content,
+        }))
 
       const decisionContext = {
         id: decision.id,

@@ -8,6 +8,7 @@ import {
   type LLMProvider,
   type ToolDefinition,
   type ToolCall,
+  type ContentBlock,
 } from "./llm/index.js";
 import { type Project, type ProjectDecision } from "./supabase.js";
 
@@ -387,6 +388,7 @@ Help the user understand the tradeoffs and make an informed decision based on th
 
       // Stream with tool support
       const pendingToolCalls: ToolCall[] = [];
+      let assistantTextContent = "";
 
       for await (const chunk of provider.streamChatWithTools({
         messages: input.messages,
@@ -394,12 +396,20 @@ Help the user understand the tradeoffs and make an informed decision based on th
         tools: [saveDecisionTool],
         toolResults: input.pendingToolResults,
       })) {
-        if (chunk.type === "tool_use" && chunk.toolCall) {
+        if (chunk.type === "text_delta" && chunk.content) {
+          assistantTextContent += chunk.content;
+          yield chunk;
+        } else if (chunk.type === "tool_use" && chunk.toolCall) {
           // Collect tool calls to process
           pendingToolCalls.push(chunk.toolCall);
-          yield chunk;
         } else if (chunk.type === "done" && pendingToolCalls.length > 0) {
-          // Process tool calls before signaling done
+          // Process tool calls and continue conversation
+          const toolResults: Array<{
+            tool_use_id: string;
+            content: string;
+            is_error?: boolean;
+          }> = [];
+
           for (const toolCall of pendingToolCalls) {
             if (toolCall.name === "save_decision") {
               const result = await executeSaveDecision(
@@ -410,7 +420,7 @@ Help the user understand the tradeoffs and make an informed decision based on th
                 toolCall.input as { selected_option: string; note?: string }
               );
 
-              // Yield tool result for the frontend to handle
+              // Yield tool result for the frontend to display as system message
               yield {
                 type: "tool_use",
                 toolCall: {
@@ -421,9 +431,65 @@ Help the user understand the tradeoffs and make an informed decision based on th
                   },
                 },
               };
+
+              // Prepare tool result for continuing the conversation
+              toolResults.push({
+                tool_use_id: toolCall.id,
+                content: result.success
+                  ? `Successfully saved the decision. Selected option: "${(toolCall.input as { selected_option: string }).selected_option}"`
+                  : `Failed to save decision: ${result.message}`,
+                is_error: !result.success,
+              });
             }
           }
-          yield { type: "done" };
+
+          // Continue the conversation with tool results so the AI can explain what it did
+          // Build the updated message history including the assistant's response WITH tool_use blocks
+          // Anthropic requires the tool_use blocks in the assistant message to match the tool_result references
+          const assistantContentBlocks: ContentBlock[] = [];
+          
+          // Add text content if present
+          if (assistantTextContent) {
+            assistantContentBlocks.push({
+              type: "text",
+              text: assistantTextContent,
+            });
+          }
+          
+          // Add tool_use blocks for each tool call
+          for (const toolCall of pendingToolCalls) {
+            assistantContentBlocks.push({
+              type: "tool_use",
+              id: toolCall.id,
+              name: toolCall.name,
+              input: toolCall.input,
+            });
+          }
+
+          const updatedMessages = [
+            ...input.messages,
+            {
+              role: "assistant" as const,
+              content: assistantContentBlocks,
+            },
+          ];
+
+          // Stream the AI's follow-up response
+          for await (const followUpChunk of provider.streamChatWithTools({
+            messages: updatedMessages,
+            systemPrompt,
+            tools: [saveDecisionTool],
+            toolResults,
+          })) {
+            if (followUpChunk.type === "text_delta") {
+              yield followUpChunk;
+            } else if (followUpChunk.type === "done") {
+              yield { type: "done" };
+            } else if (followUpChunk.type === "error") {
+              yield followUpChunk;
+            }
+            // Ignore any further tool calls in the follow-up to prevent loops
+          }
         } else {
           yield chunk;
         }

@@ -141,10 +141,32 @@ export class AnthropicProvider implements LLMProvider {
     messages: ChatMessage[],
     toolResults?: ToolResult[]
   ): MessageParam[] {
-    const anthropicMessages: MessageParam[] = messages.map((msg) => ({
-      role: msg.role,
-      content: msg.content,
-    }))
+    const anthropicMessages: MessageParam[] = messages.map((msg) => {
+      // Handle both string content and structured content blocks
+      if (typeof msg.content === 'string') {
+        return {
+          role: msg.role,
+          content: msg.content,
+        }
+      }
+      
+      // Convert our content blocks to Anthropic format
+      return {
+        role: msg.role,
+        content: msg.content.map((block) => {
+          if (block.type === 'text') {
+            return { type: 'text' as const, text: block.text }
+          }
+          // tool_use block
+          return {
+            type: 'tool_use' as const,
+            id: block.id,
+            name: block.name,
+            input: block.input,
+          }
+        }),
+      }
+    })
 
     // If we have tool results, append them as a user message with tool_result blocks
     if (toolResults && toolResults.length > 0) {

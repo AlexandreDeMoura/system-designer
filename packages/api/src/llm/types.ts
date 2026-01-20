@@ -1,8 +1,24 @@
 // LLM Provider abstraction for easy switching between providers
 
+// Content block types for structured messages (matching Anthropic's format)
+export interface TextContentBlock {
+  type: 'text'
+  text: string
+}
+
+export interface ToolUseContentBlock {
+  type: 'tool_use'
+  id: string
+  name: string
+  input: Record<string, unknown>
+}
+
+export type ContentBlock = TextContentBlock | ToolUseContentBlock
+
 export interface ChatMessage {
   role: 'user' | 'assistant'
-  content: string
+  // Content can be a string (simple text) or an array of content blocks (for tool use)
+  content: string | ContentBlock[]
 }
 
 // Tool definitions for function calling
