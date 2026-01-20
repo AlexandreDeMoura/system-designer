@@ -1,6 +1,7 @@
 import clsx from 'clsx'
 import { categoryColors } from '../theme'
 import { DecisionCard } from './DecisionCard'
+import { useProjectDecisions } from '../hooks/useProjectDecisions'
 import type { Category, Decision, Phase } from '../types'
 
 interface CategorySectionProps {
@@ -16,6 +17,8 @@ export function CategorySection({ category, activePhase, onOpenChat }: CategoryS
     : category.decisions.filter(d => d.phase === activePhase || d.phase === null)
 
   const phaseDecisions = category.decisions.filter(d => d.phase !== null).length
+
+  const { isAvailable, isSaving, getSelection, selectOption, clearSelection } = useProjectDecisions()
 
   if (filteredDecisions.length === 0) return null
 
@@ -38,6 +41,11 @@ export function CategorySection({ category, activePhase, onOpenChat }: CategoryS
             categoryColor={category.color}
             isHighlighted={activePhase === null || decision.phase === activePhase}
             onOpenChat={() => onOpenChat(decision)}
+            canSaveDecision={isAvailable}
+            currentSelection={getSelection(decision.id)}
+            onSelectOption={(optionName) => selectOption(decision.id, optionName)}
+            onClearSelection={() => clearSelection(decision.id)}
+            isSaving={isSaving}
           />
         ))}
       </div>
