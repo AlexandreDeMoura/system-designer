@@ -7,7 +7,7 @@ import {
   type StreamChunk,
   type LLMProvider,
 } from "./llm/index.js";
-import { type Project } from "./supabase.js";
+import { type Project, type ProjectDecision } from "./supabase.js";
 
 export type Context = {
   user: User | null;
@@ -149,6 +149,131 @@ export const appRouter = t.router({
       return data as Project;
     }),
 
+  getProjectDecisions: protectedProcedure
+    .input(z.object({ projectId: z.number() }))
+    .query(async ({ input, ctx }) => {
+      // First verify the user owns this project
+      const { data: project, error: projectError } = await ctx.supabase
+        .from("projects")
+        .select("id")
+        .eq("id", input.projectId)
+        .eq("user_id", ctx.user.id)
+        .single();
+
+      if (projectError || !project) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Project not found",
+        });
+      }
+
+      const { data, error } = await ctx.supabase
+        .from("project_decisions")
+        .select("*")
+        .eq("project_id", input.projectId);
+
+      if (error) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: `Failed to fetch project decisions: ${error.message}`,
+        });
+      }
+
+      return data as ProjectDecision[];
+    }),
+
+  // Save (upsert) a project decision
+  saveProjectDecision: protectedProcedure
+    .input(
+      z.object({
+        projectId: z.number(),
+        decisionId: z.string().min(1),
+        selectedOption: z.string().min(1),
+        note: z.string().max(2000).optional(),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      // First verify the user owns this project
+      const { data: project, error: projectError } = await ctx.supabase
+        .from("projects")
+        .select("id")
+        .eq("id", input.projectId)
+        .eq("user_id", ctx.user.id)
+        .single();
+
+      if (projectError || !project) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Project not found",
+        });
+      }
+
+      const { data, error } = await ctx.supabase
+        .from("project_decisions")
+        .upsert(
+          {
+            project_id: input.projectId,
+            decision_id: input.decisionId,
+            selected_option: input.selectedOption,
+            note: input.note ?? null,
+          },
+          {
+            onConflict: "project_id,decision_id",
+          }
+        )
+        .select()
+        .single();
+
+      if (error) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: `Failed to save project decision: ${error.message}`,
+        });
+      }
+
+      return data as ProjectDecision;
+    }),
+
+  // Delete a project decision
+  deleteProjectDecision: protectedProcedure
+    .input(
+      z.object({
+        projectId: z.number(),
+        decisionId: z.string().min(1),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      // First verify the user owns this project
+      const { data: project, error: projectError } = await ctx.supabase
+        .from("projects")
+        .select("id")
+        .eq("id", input.projectId)
+        .eq("user_id", ctx.user.id)
+        .single();
+
+      if (projectError || !project) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Project not found",
+        });
+      }
+
+      const { error } = await ctx.supabase
+        .from("project_decisions")
+        .delete()
+        .eq("project_id", input.projectId)
+        .eq("decision_id", input.decisionId);
+
+      if (error) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: `Failed to delete project decision: ${error.message}`,
+        });
+      }
+
+      return { success: true };
+    }),
+
   // Streaming chat procedure using async generators (tRPC v11)
   chat: publicProcedure
     .input(
@@ -201,5 +326,5 @@ export type AppRouter = typeof appRouter;
 
 // Re-export types for consumers
 export type { ChatMessage, StreamChunk } from "./llm/index.js";
-export type { Project } from "./supabase.js";
+export type { Project, ProjectDecision } from "./supabase.js";
 export { createSupabaseClient } from "./supabase.js";

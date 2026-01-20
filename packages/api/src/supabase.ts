@@ -1,6 +1,5 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
-// Database types for projects table
 export interface Project {
   id: number;
   user_id: string;
@@ -8,6 +7,23 @@ export interface Project {
   description: string | null;
   created_at: string;
   updated_at: string;
+}
+
+export interface ProjectDecision {
+  id: number;
+  project_id: number;
+  decision_id: string;
+  selected_option: string;
+  note: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ProjectDecisionInsert {
+  project_id: number;
+  decision_id: string;
+  selected_option: string;
+  note?: string | null;
 }
 
 export interface ProjectInsert {
