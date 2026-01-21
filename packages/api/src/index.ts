@@ -350,6 +350,20 @@ Help the user understand the tradeoffs and make an informed decision based on th
     .mutation(async function* ({ input, ctx }): AsyncGenerator<StreamChunk> {
       const provider = getLLMProvider();
 
+      // Fetch existing saved decision for this project+decision combo
+      const { data: existingDecision } = await ctx.supabase
+        .from("project_decisions")
+        .select("selected_option, note, updated_at")
+        .eq("project_id", input.project.id)
+        .eq("decision_id", input.decision.id)
+        .single();
+
+      const savedDecision = existingDecision as {
+        selected_option: string;
+        note: string | null;
+        updated_at: string;
+      } | null;
+
       // Define the save_decision tool
       const saveDecisionTool: ToolDefinition = {
         name: "save_decision",
@@ -372,7 +386,7 @@ Help the user understand the tradeoffs and make an informed decision based on th
         },
       };
 
-      const systemPrompt = buildSystemPromptWithTools(input);
+      const systemPrompt = buildSystemPromptWithTools(input, savedDecision);
 
       // Check if provider supports tools
       if (!provider.streamChatWithTools) {
@@ -500,21 +514,47 @@ Help the user understand the tradeoffs and make an informed decision based on th
 /**
  * Build the system prompt for tool-enabled chat
  */
-function buildSystemPromptWithTools(input: {
-  decision: {
-    title: string;
-    description: string;
-    options: Array<{
-      name: string;
-      pros: string[];
-      cons: string[];
-      bestWhen: string;
-    }>;
-    questions: string[];
-  };
-  project: { name: string; description: string | null };
-}): string {
+function buildSystemPromptWithTools(
+  input: {
+    decision: {
+      title: string;
+      description: string;
+      options: Array<{
+        name: string;
+        pros: string[];
+        cons: string[];
+        bestWhen: string;
+      }>;
+      questions: string[];
+    };
+    project: { name: string; description: string | null };
+  },
+  savedDecision: {
+    selected_option: string;
+    note: string | null;
+    updated_at: string;
+  } | null
+): string {
   const optionNames = input.decision.options.map((o) => o.name).join(", ");
+
+  // Build the saved decision context section if one exists
+  const savedDecisionSection = savedDecision
+    ? `
+EXISTING SAVED DECISION:
+The user has already saved a decision for this topic:
+- Selected Option: ${savedDecision.selected_option}${savedDecision.note ? `\n- Notes: ${savedDecision.note}` : ""}
+- Saved on: ${new Date(savedDecision.updated_at).toLocaleDateString()}
+
+Keep this in mind during the conversation. The user may want to:
+- Discuss or reconsider their previous choice
+- Update their decision to a different option
+- Add or modify the notes for their decision
+If they want to change their decision, you can use the save_decision tool to update it.
+`
+    : `
+NO SAVED DECISION YET:
+The user has not yet saved a decision for this topic in their project.
+`;
 
   return `You are a helpful system design assistant. You're helping a developer make decisions about their system architecture.
 
@@ -524,7 +564,7 @@ Project Context:
 Current Decision Context:
 - Decision: ${input.decision.title}
 - Description: ${input.decision.description}
-
+${savedDecisionSection}
 Available Options:
 ${input.decision.options
   .map(
