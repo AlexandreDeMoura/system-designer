@@ -1,8 +1,9 @@
 import { useState, useRef, useEffect, memo } from 'react'
 import { createPortal } from 'react-dom'
-import { X, Trash2, Square, MessageSquare, User, CheckCircle } from 'lucide-react'
+import { X, Trash2, Square, MessageSquare, User, CheckCircle, Check } from 'lucide-react'
 import clsx from 'clsx'
 import { useChat, type ChatMessage, type SaveDecisionResult } from '../hooks/useChat'
+import { useProjectDecisions } from '../hooks/useProjectDecisions'
 import { useProject } from '../projectContext'
 import { trpc } from '../trpc'
 import { phaseColors, categoryColors } from '../theme'
@@ -26,6 +27,9 @@ export function ChatModal({ decision, isOpen, onClose, categoryColor, nudges }: 
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const { selectedProject } = useProject()
   const utils = trpc.useUtils()
+  const { getSelection } = useProjectDecisions()
+  const currentSelection = getSelection(decision.id)
+  const selectedOptionName = currentSelection?.selected_option
 
   const handleDecisionSaved = (result: SaveDecisionResult) => {
     if (result.success && selectedProject) {
@@ -291,52 +295,81 @@ export function ChatModal({ decision, isOpen, onClose, categoryColor, nudges }: 
             
             {/* Options */}
             <div>
-              <h4 className="text-[11px] uppercase tracking-wider text-[#6b7c93] mb-3 font-semibold">Options</h4>
+              <h4 className="text-[11px] uppercase tracking-wider text-[#6b7c93] mb-3 font-semibold flex items-center gap-2">
+                Options
+                {selectedOptionName && (
+                  <span className="ml-auto text-emerald-400 flex items-center gap-1 normal-case tracking-normal text-xs">
+                    <Check className="w-3 h-3" />
+                    {selectedOptionName}
+                  </span>
+                )}
+              </h4>
               <div className="space-y-2">
-                {decision.options.map((option, i) => (
-                  <details key={i} className="group">
-                    <summary className="flex items-center gap-3 py-2.5 px-3 rounded-xl cursor-pointer bg-[#0f1419] hover:bg-[#1a2332] border border-[#1e2a3a] list-none transition-colors">
-                      <span className={clsx(
-                        'w-6 h-6 rounded-lg flex items-center justify-center text-xs font-mono font-bold',
-                        catColor.bg, catColor.text
+                {decision.options.map((option, i) => {
+                  const isSelected = selectedOptionName === option.name
+                  return (
+                    <details key={i} className="group">
+                      <summary className={clsx(
+                        'flex items-center gap-3 py-2.5 px-3 rounded-xl cursor-pointer list-none transition-colors',
+                        isSelected
+                          ? 'bg-emerald-500/10 border border-emerald-500/30 ring-1 ring-emerald-500/20'
+                          : 'bg-[#0f1419] hover:bg-[#1a2332] border border-[#1e2a3a]'
                       )}>
-                        {i + 1}
-                      </span>
-                      <span className="font-medium text-[#c8d1dc] text-sm flex-1">{option.name}</span>
-                      <svg className="w-4 h-4 text-[#6b7c93] transition-transform duration-200 group-open:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                      </svg>
-                    </summary>
-                    <div className="mt-2 ml-9 p-3 bg-[#0f1419] rounded-xl text-sm space-y-3 border border-[#1e2a3a]">
-                      <div>
-                        <span className="text-emerald-400 text-[10px] uppercase tracking-wider font-semibold">Pros</span>
-                        <ul className="text-[#8b9eb3] mt-1.5 space-y-1">
-                          {option.pros.map((pro, idx) => (
-                            <li key={idx} className="flex items-start gap-2 text-[13px]">
-                              <span className="text-emerald-400/70 mt-0.5">+</span>
-                              <span>{pro}</span>
-                            </li>
-                          ))}
-                        </ul>
+                        <span className={clsx(
+                          'w-6 h-6 rounded-lg flex items-center justify-center text-xs font-mono font-bold',
+                          isSelected ? 'bg-emerald-500/20 text-emerald-400' : [catColor.bg, catColor.text]
+                        )}>
+                          {isSelected ? <Check className="w-3.5 h-3.5" /> : i + 1}
+                        </span>
+                        <span className={clsx(
+                          'font-medium text-sm flex-1',
+                          isSelected ? 'text-emerald-300' : 'text-[#c8d1dc]'
+                        )}>
+                          {option.name}
+                        </span>
+                        {isSelected && (
+                          <span className="text-xs text-emerald-500 bg-emerald-500/10 px-1.5 py-0.5 rounded">
+                            Selected
+                          </span>
+                        )}
+                        <svg className="w-4 h-4 text-[#6b7c93] transition-transform duration-200 group-open:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </summary>
+                      <div className={clsx(
+                        'mt-2 ml-9 p-3 rounded-xl text-sm space-y-3 border',
+                        isSelected ? 'bg-emerald-500/5 border-emerald-500/20' : 'bg-[#0f1419] border-[#1e2a3a]'
+                      )}>
+                        <div>
+                          <span className="text-emerald-400 text-[10px] uppercase tracking-wider font-semibold">Pros</span>
+                          <ul className="text-[#8b9eb3] mt-1.5 space-y-1">
+                            {option.pros.map((pro, idx) => (
+                              <li key={idx} className="flex items-start gap-2 text-[13px]">
+                                <span className="text-emerald-400/70 mt-0.5">+</span>
+                                <span>{pro}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                        <div>
+                          <span className="text-rose-400 text-[10px] uppercase tracking-wider font-semibold">Cons</span>
+                          <ul className="text-[#8b9eb3] mt-1.5 space-y-1">
+                            {option.cons.map((con, idx) => (
+                              <li key={idx} className="flex items-start gap-2 text-[13px]">
+                                <span className="text-rose-400/70 mt-0.5">−</span>
+                                <span>{con}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                        <div className="pt-2 border-t border-[#1e2a3a]">
+                          <span className="text-cyan-400 text-[10px] uppercase tracking-wider font-semibold">Best When</span>
+                          <p className="text-[#8b9eb3] mt-1.5 text-[13px]">{option.bestWhen}</p>
+                        </div>
                       </div>
-                      <div>
-                        <span className="text-rose-400 text-[10px] uppercase tracking-wider font-semibold">Cons</span>
-                        <ul className="text-[#8b9eb3] mt-1.5 space-y-1">
-                          {option.cons.map((con, idx) => (
-                            <li key={idx} className="flex items-start gap-2 text-[13px]">
-                              <span className="text-rose-400/70 mt-0.5">−</span>
-                              <span>{con}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                      <div className="pt-2 border-t border-[#1e2a3a]">
-                        <span className="text-cyan-400 text-[10px] uppercase tracking-wider font-semibold">Best When</span>
-                        <p className="text-[#8b9eb3] mt-1.5 text-[13px]">{option.bestWhen}</p>
-                      </div>
-                    </div>
-                  </details>
-                ))}
+                    </details>
+                  )
+                })}
               </div>
             </div>
 
