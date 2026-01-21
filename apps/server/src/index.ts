@@ -14,7 +14,12 @@ import { appRouter, createSupabaseClient, type Context } from "@sd/api";
 const server = Fastify({ logger: true });
 
 await server.register(cors, {
-  origin: ["http://localhost:5173", "http://localhost:5174"],
+  origin: [
+    "http://localhost:5173",
+    "http://localhost:5174",
+    "https://system-designer.com",
+    "https://www.system-designer.com",
+  ],
   credentials: true,
   allowedHeaders: ["authorization", "content-type"],
 });
@@ -52,5 +57,5 @@ await server.register(fastifyTRPCPlugin, {
 
 const port = Number(process.env.PORT) || 3000;
 
-await server.listen({ port, host: "127.0.0.1" });
-console.log(`Server running at http://127.0.0.1:${port}`);
+await server.listen({ port, host: "0.0.0.0" });
+console.log(`Server running on port ${port}`);
