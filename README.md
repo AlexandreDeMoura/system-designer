@@ -1,75 +1,63 @@
-# React + TypeScript + Vite
+# System Designer
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+An interactive decision-making tool for developers navigating modern web architecture choices. Explore a curated catalog of system design decisions—frameworks, databases, auth strategies, deployment models, and more—with AI-assisted conversations to help you evaluate tradeoffs in the context of your specific requirements.
 
-Currently, two official plugins are available:
+A live version is available at [system-designer.com](https://system-designer.com).
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Tech Stack
 
-## React Compiler
+- **Frontend:** React 19, TypeScript, Vite, Tailwind CSS
+- **Backend:** Fastify, tRPC v11
+- **Database:** Supabase (PostgreSQL + RLS)
+- **AI:** Anthropic Claude (via provider abstraction)
 
-The React Compiler is enabled on this template. See [this documentation](https://react.dev/learn/react-compiler) for more information.
+## Project Structure
 
-Note: This will impact Vite dev & build performances.
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```
+packages/
+  api/          # Shared tRPC router, types, LLM abstraction (@sd/api)
+apps/
+  web/          # React frontend (@sd/web)
+  server/       # Fastify server (@sd/server)
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Getting Started
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+```bash
+# Install dependencies
+npm install
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+# Set up environment variables
+cp apps/server/.env.example apps/server/.env
+# Fill in your Anthropic API key and Supabase credentials
+
+# Start all services (API watch + Web dev server + Fastify server)
+npm run dev
 ```
+
+The web app runs on `http://localhost:5173` and the API server on `http://localhost:3000`.
+
+## Commands
+
+```bash
+# Development
+npm run dev                     # Start all services concurrently
+npm -w @sd/web run dev          # Web only
+npm -w @sd/server run dev       # Server only
+
+# Build & Typecheck
+npm run build                   # Build all packages (api → server → web)
+
+# Lint
+npm run lint                    # Lint all workspaces
+
+# Database (requires Docker)
+npx supabase start              # Start local Supabase
+npx supabase migration new <name>  # Create a new migration
+npx supabase db reset           # Apply migrations locally
+npx supabase db push            # Push migrations to remote
+```
+
+## License
+
+MIT
