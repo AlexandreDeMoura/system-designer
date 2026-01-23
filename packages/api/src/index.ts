@@ -278,7 +278,7 @@ export const appRouter = t.router({
     }),
 
   // Streaming chat procedure using async generators (tRPC v11)
-  chat: publicProcedure
+  chat: protectedProcedure
     .input(
       z.object({
         messages: z.array(chatMessageSchema),

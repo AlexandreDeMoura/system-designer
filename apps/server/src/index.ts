@@ -7,6 +7,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 config({ path: resolve(__dirname, "../.env") });
 import Fastify from "fastify";
 import cors from "@fastify/cors";
+import rateLimit from "@fastify/rate-limit";
 import { fastifyTRPCPlugin } from "@trpc/server/adapters/fastify";
 import type { FastifyRequest } from "fastify";
 import { appRouter, createSupabaseClient, type Context } from "@sd/api";
@@ -22,6 +23,11 @@ await server.register(cors, {
   ],
   credentials: true,
   allowedHeaders: ["authorization", "content-type", "trpc-accept"],
+});
+
+await server.register(rateLimit, {
+  max: 20,
+  timeWindow: "5 minutes",
 });
 
 async function createContext({
