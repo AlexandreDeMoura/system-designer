@@ -120,3 +120,4 @@ npx supabase db push
 # Generate TypeScript types from database schema
 npx supabase gen types typescript --local > packages/api/src/database.types.ts
 ```
+
