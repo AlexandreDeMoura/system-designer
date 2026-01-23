@@ -42,7 +42,6 @@ export function PhaseSelector({ activePhase, setActivePhase }: PhaseSelectorProp
             >
               <span className={clsx('w-2 h-2 rounded-full', isActive ? 'bg-current pulse-active' : 'bg-slate-600')} />
               <span className="font-medium">{phase.name}</span>
-              <span className="text-xs opacity-60">({phase.week})</span>
             </button>
           )
         })}

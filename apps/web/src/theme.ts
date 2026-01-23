@@ -1,9 +1,9 @@
 // Phase definitions
 export const phases = [
-  { id: 1, name: 'Foundation', week: 'Week 1', description: 'Core technology choices', color: 'blue' },
-  { id: 2, name: 'Core Architecture', week: 'Week 2-3', description: 'Structural decisions', color: 'cyan' },
-  { id: 3, name: 'Developer Experience', week: 'Week 3-4', description: 'Tooling & workflow', color: 'emerald' },
-  { id: 4, name: 'Polish', week: 'Ongoing', description: 'Refinement & optimization', color: 'amber' },
+  { id: 1, name: 'MVP and beyond', description: 'Core technology choices', color: 'blue' },
+  { id: 2, name: 'Scaling the app', description: 'Structural decisions', color: 'cyan' },
+  { id: 3, name: 'Scaling the team', description: 'Tooling & workflow', color: 'emerald' },
+  { id: 4, name: 'Entreprise Grade', description: 'Refinement & optimization', color: 'amber' },
 ] as const
 
 // Phase color utilities
