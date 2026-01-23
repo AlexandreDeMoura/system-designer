@@ -13,6 +13,25 @@ import { appRouter, createSupabaseClient, type Context } from "@sd/api";
 
 const server = Fastify({ logger: true });
 
+// #region agent log
+server.addHook('onRequest', async (request) => {
+  fetch('http://127.0.0.1:7242/ingest/79ea6f14-4549-4b16-9ec3-5051af1b2df5',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'index.ts:onRequest',message:'Incoming request',data:{method:request.method,url:request.url,rawUrl:request.raw.url,origin:request.headers.origin,hasAuth:!!request.headers.authorization},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'F,G,H'})}).catch(()=>{});
+});
+// #endregion
+
+// #region agent log
+server.addHook('onSend', async (request, reply, payload) => {
+  const statusCode = reply.statusCode;
+  if (request.method !== 'OPTIONS') {
+    fetch('http://127.0.0.1:7242/ingest/79ea6f14-4549-4b16-9ec3-5051af1b2df5',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'index.ts:onSend',message:'Response sent',data:{method:request.method,url:request.url,statusCode,payloadType:typeof payload},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'F,G,H,I'})}).catch(()=>{});
+  } else {
+    const responseHeaders = reply.getHeaders();
+    fetch('http://127.0.0.1:7242/ingest/79ea6f14-4549-4b16-9ec3-5051af1b2df5',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'index.ts:onSend',message:'CORS preflight response',data:{allowHeaders:responseHeaders['access-control-allow-headers'],allowOrigin:responseHeaders['access-control-allow-origin'],statusCode},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'A,B'})}).catch(()=>{});
+  }
+  return payload;
+});
+// #endregion
+
 await server.register(cors, {
   origin: [
     "http://localhost:5173",
@@ -21,7 +40,7 @@ await server.register(cors, {
     "https://www.system-designer.com",
   ],
   credentials: true,
-  allowedHeaders: ["authorization", "content-type"],
+  allowedHeaders: ["authorization", "content-type", "trpc-accept"],
 });
 
 async function createContext({
@@ -39,6 +58,9 @@ async function createContext({
 
   if (accessToken) {
     const { data, error } = await supabase.auth.getUser(accessToken);
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/79ea6f14-4549-4b16-9ec3-5051af1b2df5',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'index.ts:createContext',message:'Auth check',data:{hasToken:true,hasUser:!!data?.user,error:error?.message},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H'})}).catch(()=>{});
+    // #endregion
     if (!error && data.user) {
       user = data.user;
     }
