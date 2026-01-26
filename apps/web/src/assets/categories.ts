@@ -19,9 +19,9 @@ export const categories: Category[] = [
       icon: SquareMousePointer,
       color: 'blue',
       nudges: [
-        "Which framework is best for my team size?",
-        "Should I use SSR or CSR for my app?",
-        "What's the best state management approach?"
+        "Help me choose a front-end stack for my app (SEO, complexity, team).",
+        "Given my product, should I use CSR, SSR, SSG, or ISR—and why?",
+        "How should I split state between server cache, client state, and the URL?"
       ],
       decisions: [
         {
@@ -130,9 +130,9 @@ export const categories: Category[] = [
       icon: Network,
       color: 'cyan',
       nudges: [
-        "REST vs GraphQL for my use case?",
-        "Do I need real-time communication?",
-        "How should I handle API versioning?"
+        "Based on my clients and constraints, should I use REST, GraphQL, or tRPC?",
+        "How should I evolve my API without breaking clients (versioning, deprecations)?",
+        "What's the simplest real-time approach for my use case (updates, chat, presence)?"
       ],
       decisions: [
         {
@@ -171,9 +171,9 @@ export const categories: Category[] = [
       icon: Server,
       color: 'violet',
       nudges: [
-        "Which runtime fits my workload?",
-        "Monolith or microservices for my scale?",
-        "What backend framework should I use?"
+        "Given my workload and team, which runtime (Node/Go/Python/Rust) fits best?",
+        "Should I start with a modular monolith, microservices, or serverless—and why?",
+        "Recommend a backend framework + architecture pattern for speed and maintainability."
       ],
       decisions: [
         {
@@ -230,9 +230,9 @@ export const categories: Category[] = [
       icon: Database,
       color: 'emerald',
       nudges: [
-        "SQL or NoSQL for my data model?",
-        "Which ORM should I choose?",
-        "How should I handle caching?"
+        "Given my data and queries, should I pick Postgres, MongoDB, or something else?",
+        "Help me choose an ORM/query builder and model migrations/transactions for my stack.",
+        "Design a caching strategy for my app (what/where/TTL/invalidation)."
       ],
       decisions: [
         {
@@ -300,9 +300,9 @@ export const categories: Category[] = [
       icon: LockKeyhole,
       color: 'rose',
       nudges: [
-        "Build auth or use a provider?",
-        "Which authentication method fits my users?",
-        "How should I handle authorization?"
+        "Help me choose build-vs-buy auth (Clerk/Auth0/Supabase) for my product and users.",
+        "Which login methods should I support first (OAuth, magic links, SSO, passkeys)?",
+        "How should I design authorization for roles, tenants, and resource sharing?"
       ],
       decisions: [
         {
@@ -356,9 +356,9 @@ export const categories: Category[] = [
       icon: Cloud,
       color: 'amber',
       nudges: [
-        "Serverless or containers for my app?",
-        "Which hosting platform should I use?",
-        "How should I set up CI/CD?"
+        "What's the best hosting model to start with (PaaS, serverless, containers) and why?",
+        "Help me pick a platform (Vercel/Fly/AWS/Render) balancing cost, DX, and lock-in.",
+        "What should my CI/CD pipeline include from day one (tests, previews, migrations)?"
       ],
       decisions: [
         {
@@ -410,9 +410,9 @@ export const categories: Category[] = [
       icon: ChartBar,
       color: 'cyan',
       nudges: [
-        "How should I handle logging?",
-        "Which error tracking tool is best?",
-        "Do I need distributed tracing?"
+        "What should we log (structure, fields, sampling) to debug production issues?",
+        "Which metrics and alerts should we set up first for reliability and performance?",
+        "When is distributed tracing worth it, and what should we instrument first?"
       ],
       decisions: [
         {
@@ -448,9 +448,9 @@ export const categories: Category[] = [
       icon: BugPlay,
       color: 'emerald',
       nudges: [
-        "Unit tests vs integration tests balance?",
-        "Which testing framework should I use?",
-        "How much test coverage do I need?"
+        "What test mix (unit/integration/e2e) fits our risk tolerance and release cadence?",
+        "Help me choose testing tools for our stack and avoid flaky E2E tests.",
+        "What's a realistic coverage target, and how do we measure confidence beyond %?"
       ],
       decisions: [
         {
@@ -486,9 +486,9 @@ export const categories: Category[] = [
       icon: Braces,
       color: 'violet',
       nudges: [
-        "Monorepo or polyrepo for my project?",
-        "Which linting tools should I set up?",
-        "Do I need feature flags?"
+        "Should we use a monorepo or polyrepo given our team and deployment model?",
+        "What quality gates should we enforce (lint/format/typecheck/pre-commit) without pain?",
+        "When are feature flags worth it, and what's the lightest way to start?"
       ],
       decisions: [
         {
@@ -538,9 +538,9 @@ export const categories: Category[] = [
       icon: CircleEllipsis,
       color: 'rose',
       nudges: [
-        "Do I need internationalization?",
-        "Which analytics tool should I use?",
-        "How do I set performance budgets?"
+        "Should we implement i18n now or later, and what's expensive to retrofit?",
+        "Help me choose an analytics approach (product vs privacy) and what to track first.",
+        "How do we set a performance budget (LCP/TTFB/JS size) and enforce it in CI?"
       ],
       decisions: [
         {
