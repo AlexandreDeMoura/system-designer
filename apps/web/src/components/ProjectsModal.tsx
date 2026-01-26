@@ -89,8 +89,9 @@ export function ProjectsModal({ isOpen, onClose }: ProjectsModalProps) {
           ) : isCreating ? (
             <form onSubmit={handleCreate} className="space-y-4">
               <div>
-                <label className="block text-sm text-[#8b9eb3] mb-2">Name</label>
+                <label htmlFor="project-name" className="block text-sm text-[#8b9eb3] mb-2">Name</label>
                 <input
+                  id="project-name"
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
@@ -100,8 +101,9 @@ export function ProjectsModal({ isOpen, onClose }: ProjectsModalProps) {
                 />
               </div>
               <div>
-                <label className="block text-sm text-[#8b9eb3] mb-2">Description</label>
+                <label htmlFor="project-description" className="block text-sm text-[#8b9eb3] mb-2">Description</label>
                 <textarea
+                  id="project-description"
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="Optional description..."

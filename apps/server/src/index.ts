@@ -26,7 +26,7 @@ await server.register(cors, {
 });
 
 await server.register(rateLimit, {
-  max: 20,
+  max: 50,
   timeWindow: "5 minutes",
 });
 

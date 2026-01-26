@@ -131,8 +131,9 @@ export function Header({ onOpenProjects }: HeaderProps) {
 
                 <form onSubmit={handlePasswordAuth} className="space-y-3">
                   <div>
-                    <label className="block text-xs text-[#8b9eb3] mb-1">Email</label>
+                    <label htmlFor="auth-email" className="block text-xs text-[#8b9eb3] mb-1">Email</label>
                     <input
+                      id="auth-email"
                       type="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
@@ -142,8 +143,9 @@ export function Header({ onOpenProjects }: HeaderProps) {
                     />
                   </div>
                   <div>
-                    <label className="block text-xs text-[#8b9eb3] mb-1">Password</label>
+                    <label htmlFor="auth-password" className="block text-xs text-[#8b9eb3] mb-1">Password</label>
                     <input
+                      id="auth-password"
                       type="password"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
