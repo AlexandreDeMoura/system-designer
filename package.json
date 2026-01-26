@@ -9,9 +9,14 @@
   "scripts": {
     "dev": "concurrently -n API,WEB,SERVER -c yellow,green,cyan \"npm -w @sd/api run dev\" \"npm -w @sd/web run dev\" \"npm -w @sd/server run dev\"",
     "build": "npm -w @sd/api run build && npm -w @sd/server run build && npm -w @sd/web run build",
-    "lint": "npm -ws run lint"
+    "lint": "npm -ws run lint",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:debug": "playwright test --debug"
   },
   "devDependencies": {
+    "@playwright/test": "^1.58.0",
     "concurrently": "^9.0.0",
     "typescript": "~5.9.3"
   },
