@@ -2,7 +2,6 @@
 
 An interactive decision-making tool for developers navigating modern web architecture choices. Explore a curated catalog of system design decisions—frameworks, databases, auth strategies, deployment models, and more—with AI-assisted conversations to help you evaluate tradeoffs in the context of your specific requirements.
 
-A live version is available at [system-designer.com](https://system-designer.com).
 
 ## Tech Stack
 
